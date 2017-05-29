@@ -96,6 +96,19 @@ public class InventoryModel implements Modellable {
 		description = description.trim().equals("")?none:description;
 		genre = genre.trim().equals("")?none:genre;
 		
+		if (media instanceof CD){
+			String temp;
+			String artist = ((CD) media).getArtist();
+			
+			artist = artist.trim().equals("")?none:artist;
+			temp = "UPDATE cd SET Title = '" + title + "', Description = '" + description + "', Genre = '" + genre + "', Artist = '" + artist + "' WHERE CDID = " + ID;
+			try {
+				statement.execute(temp);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
 /*		String value = title + delimiter + description + delimiter + genre + delimiter;
 		
 		if (media instanceof CD){
@@ -131,8 +144,15 @@ public class InventoryModel implements Modellable {
 			setData(media);
 
 			//Modify only if quantity is not empty and is a number (not consisting of alphabetic characters)
-			//if (!quantity.equals("") && Utility.isNumeric(quantity))
-				//inventory.setProperty(ID, quantity);
+			String temp;
+			if (!quantity.equals("") && Utility.isNumeric(quantity)){
+				temp = "UPDATE inventory SET Quantity = " + quantity + " WHERE MediaID = " + ID;
+				try {
+					statement.execute(temp);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		else 
 			System.out.println("editItem(Media media, String quantity) reference is null.");
