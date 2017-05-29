@@ -265,8 +265,128 @@ public class InventoryModel implements Modellable {
 	
 	private void searchItemHelper(String query) {	
 		String temp = null;
-		String value;
+		//String value;
 		
+		String ID = "";
+		String title = "";
+		String description = "";
+		String genre = "";
+		String artist = "";
+		String cast = "";
+		String author = "";
+		String ISBN = "";
+
+		if (!query.equals("")){
+			//ID based search
+			if (Utility.isNumeric(query)){		
+				temp = "SELECT * FROM cd WHERE CDID = " + query;
+				try {
+					ResultSet resultSet = statement.executeQuery(temp);
+					ResultSetMetaData metaData = resultSet.getMetaData();
+					//int numberOfColumns = metaData.getColumnCount();
+					resultSet.last();
+					int numberOfRows = resultSet.getRow();
+					resultSet.first();
+					if (numberOfRows > 0){
+						if (resultSet.getObject(2) != null)
+							title = resultSet.getObject(2).toString();
+						if (resultSet.getObject(3) != null)
+							description = resultSet.getObject(3).toString();
+						if (resultSet.getObject(4) != null)
+							genre = resultSet.getObject(4).toString();
+						if (resultSet.getObject(5) != null)
+							artist = resultSet.getObject(5).toString();
+
+						searchResult.add(new CD(query, title, description, genre, artist));
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				temp = "SELECT * FROM dvd WHERE DVDID = " + query;
+				try {
+					ResultSet resultSet = statement.executeQuery(temp);
+					ResultSetMetaData metaData = resultSet.getMetaData();
+					//int numberOfColumns = metaData.getColumnCount();
+					resultSet.last();
+					int numberOfRows = resultSet.getRow();
+					resultSet.first();
+					if (numberOfRows > 0){
+						if (resultSet.getObject(2) != null)
+							title = resultSet.getObject(2).toString();
+						if (resultSet.getObject(3) != null)
+							description = resultSet.getObject(3).toString();
+						if (resultSet.getObject(4) != null)
+							genre = resultSet.getObject(4).toString();
+						if (resultSet.getObject(5) != null)
+							cast = resultSet.getObject(5).toString();
+
+						searchResult.add(new DVD(query, title, description, genre, cast));
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				temp = "SELECT * FROM book WHERE BookID = " + query;
+				try {
+					ResultSet resultSet = statement.executeQuery(temp);
+					ResultSetMetaData metaData = resultSet.getMetaData();
+					//int numberOfColumns = metaData.getColumnCount();
+					resultSet.last();
+					int numberOfRows = resultSet.getRow();
+					resultSet.first();
+					if (numberOfRows > 0){
+						if (resultSet.getObject(2) != null)
+							title = resultSet.getObject(2).toString();
+						if (resultSet.getObject(3) != null)
+							description = resultSet.getObject(3).toString();
+						if (resultSet.getObject(4) != null)
+							genre = resultSet.getObject(4).toString();
+						if (resultSet.getObject(5) != null)
+							author = resultSet.getObject(5).toString();
+						if (resultSet.getObject(6) != null)
+							ISBN = resultSet.getObject(6).toString();
+
+						searchResult.add(new Book(query, title, description, genre, author, ISBN));
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			//simple return all CDs, DVDs or Books
+			else if (query.equals("return-all-cds")){
+				temp = "SELECT * FROM cd";
+				try {
+					ResultSet resultSet = statement.executeQuery(temp);
+					ResultSetMetaData metaData = resultSet.getMetaData();
+					//int numberOfColumns = metaData.getColumnCount();
+					resultSet.last();
+					int numberOfRows = resultSet.getRow();
+					resultSet.first();
+					if (numberOfRows > 0){
+						do{
+							if (resultSet.getObject(1) != null)
+								ID = resultSet.getObject(1).toString();
+							if (resultSet.getObject(2) != null)
+								title = resultSet.getObject(2).toString();
+							if (resultSet.getObject(3) != null)
+								description = resultSet.getObject(3).toString();
+							if (resultSet.getObject(4) != null)
+								genre = resultSet.getObject(4).toString();
+							if (resultSet.getObject(5) != null)
+								artist = resultSet.getObject(5).toString();
+
+							searchResult.add(new CD(ID, title, description, genre, artist));
+
+						}while (resultSet.next());
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 /*		if (!query.equals("")){
 			//ID based search
 			if (Utility.isNumeric(query)){
@@ -373,14 +493,39 @@ public class InventoryModel implements Modellable {
 
 	@Override
 	public String getItemQuantity(String itemID) {
-/*		if (itemID != null)
+		/*		if (itemID != null)
 			return inventory.getProperty(itemID);
 		else{ 
 			System.out.println("getItemQuantity(String itemID) reference is null.");
 			return null;
 		}
-*/
-		return "1";
+		 */
+		String temp;
+		String quantity = "0";
+		if (itemID != null){
+			temp = "SELECT * FROM inventory WHERE MediaID = " + itemID;
+			try {
+				ResultSet resultSet = statement.executeQuery(temp);
+				ResultSetMetaData metaData = resultSet.getMetaData();
+				resultSet.last();
+				int numberOfRows = resultSet.getRow();
+				resultSet.first();
+				if (numberOfRows > 0){
+					if (resultSet.getObject(2) != null){
+						quantity = resultSet.getObject(2).toString();
+					}
+				}
+
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return quantity;
+		}
+		else{ 
+			System.out.println("getItemQuantity(String itemID) reference is null.");
+			return null;
+		}
+
 	}
 
 }
