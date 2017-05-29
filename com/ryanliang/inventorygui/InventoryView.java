@@ -266,7 +266,8 @@ public class InventoryView extends JFrame implements Viewable{
 		
 		String input = JOptionPane.showInputDialog("Enter item ID number");
 		if (input != null){
-			controller.deleteItem(input.trim());
+			if (!input.equals("") && Utility.isNumeric(input))
+				controller.deleteItem(input.trim());
 		}
 	}
 

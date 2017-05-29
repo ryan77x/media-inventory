@@ -23,21 +23,9 @@ public class InventoryModel implements Modellable {
 
 	private Viewable view;
 	private final ArrayList<Media> searchResult = new ArrayList<>();
-/*	private final Properties CDList = new Properties();
-	private final Properties DVDList = new Properties();
-	private final Properties bookList = new Properties();
-	private final Properties IDMemory = new Properties();
-	private final Properties inventory = new Properties();
 
-	private final String CDFile = "CD_list.dat";
-	private final String DVDFile = "DVD_list.dat";
-	private final String bookFile = "Book_list.dat";
-	private final String IDMemoryFile = "ID_memory.dat";
-	private final String inventoryFile = "Inventory.dat";
-	
-	private final static String delimiter = "-1a-2b-";
 	private static long IDCounter = 0;
-*/	
+	
 	private final Connection connection;
 	private final Statement statement;
 	private ResultSet resultSet;
@@ -58,7 +46,8 @@ public class InventoryModel implements Modellable {
 	public void disconnectFromDatabase(){
 		if (connectedToDatabase){
 			try{
-				//resultSet.close();
+				if (resultSet != null)
+					resultSet.close();
 				statement.close();
 				connection.close();
 			}
@@ -76,15 +65,33 @@ public class InventoryModel implements Modellable {
 			String quantity = quantityA;
 			String ID = media.getID();
 
-			setData(media);
+			setData(media, SQLCommand.INSERT);
 			//inventory.setProperty(ID, quantity);
 			//IDMemory.setProperty("IDCounter", String.valueOf(++IDCounter));
+			
+			//Modify only if quantity is not empty and is a number (not consisting of alphabetic characters)
+			String temp;
+			if (!quantity.equals("") && Utility.isNumeric(quantity)){
+				temp = "INSERT INTO inventory (MediaID, Quantity) VALUES(" + ID + ", " + quantity + ")";
+				try {
+					statement.execute(temp);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+			temp = "UPDATE mediaID SET IDCounter = " + (++IDCounter) + " WHERE MediaID = 1";
+			try {
+				statement.execute(temp);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		else 
 			System.out.println("addItem(Media media, String quantityA) reference is null.");
 	}
 	
-	private void setData(Media media) {		
+	private void setData(Media media, SQLCommand command) {		
 		String none = "None";
 		
 		String ID = media.getID();
@@ -97,13 +104,18 @@ public class InventoryModel implements Modellable {
 		genre = genre.trim().equals("")?none:genre;
 		
 		if (media instanceof CD){
-			String temp;
+			String temp = null;
 			String artist = ((CD) media).getArtist();
 			
 			artist = artist.trim().equals("")?none:artist;
-			temp = "UPDATE cd SET Title = '" + title + "', Description = '" + description + "', Genre = '" + genre + "', Artist = '" + artist + "' WHERE CDID = " + ID;
+			if (command == SQLCommand.UPDATE)
+				temp = "UPDATE cd SET Title = '" + title + "', Description = '" + description + "', Genre = '" + genre + "', Artist = '" + artist + "' WHERE CDID = " + ID;
+			else if (command == SQLCommand.INSERT)
+				temp = "INSERT INTO cd (CDID, Title, Description, Genre, Artist) VALUES(" + ID + ", '" + title + "', '" + description + "', '" + genre + "', '" + artist + "'" + ")";
+						//INSERT INTO cd` (`CDID`, `Title`, `Description`, `Genre`, `Artist`) VALUES ('8', 'cd8', 'ee', 'ff', 'rr');
 			try {
-				statement.execute(temp);
+				if (temp != null)
+					statement.execute(temp);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -141,7 +153,7 @@ public class InventoryModel implements Modellable {
 	public void editItem(Media media, String quantity) {
 		if (media != null && quantity != null){
 			String ID = media.getID();
-			setData(media);
+			setData(media, SQLCommand.UPDATE);
 
 			//Modify only if quantity is not empty and is a number (not consisting of alphabetic characters)
 			String temp;
@@ -233,6 +245,26 @@ public class InventoryModel implements Modellable {
 			e.printStackTrace();
 		}
 */
+		String temp;
+		String counter;
+		
+		temp = "SELECT * FROM mediaID WHERE MediaID = 1";
+		try {
+			ResultSet resultSet = statement.executeQuery(temp);
+			resultSet.last();
+			int numberOfRows = resultSet.getRow();
+			resultSet.first();
+			if (numberOfRows > 0){
+				if (resultSet.getObject(2) != null){
+					counter = resultSet.getObject(2).toString();
+					if (counter != null)
+						IDCounter = Long.valueOf(counter);
+				}
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	@Override
 	public void setView(Viewable view) {
@@ -258,9 +290,12 @@ public class InventoryModel implements Modellable {
 
 	@Override
 	public void deleteItem(String itemID) throws SQLException, IllegalStateException {
-		String temp = "DELETE FROM cd WHERE CDID = " + itemID;
-		statement.execute(temp);
-		
+		if (itemID != null){
+			String temp = "DELETE FROM cd WHERE CDID = " + itemID;
+			statement.execute(temp);
+		}
+		else 
+			System.out.println("deleteItem(String itemID) reference is null.");	
 /*		if (itemID != null){
 			CDList.remove(itemID);
 			DVDList.remove(itemID);
@@ -279,8 +314,7 @@ public class InventoryModel implements Modellable {
 	
 	@Override
 	public String getID() {	
-		//return String.valueOf(IDCounter);
-		return "1";
+		return String.valueOf(IDCounter);
 	}
 	
 	private void searchItemHelper(String query) {	
@@ -477,6 +511,7 @@ public class InventoryModel implements Modellable {
 			}
 		}
 */
+
 	}
 
 	private void searchResultHelper(String key, String str, MediaCategory media) {
