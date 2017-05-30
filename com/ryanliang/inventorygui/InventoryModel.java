@@ -19,7 +19,9 @@ import java.util.Properties;
 */
 import java.util.ArrayList;
 
-public class InventoryModel implements Modellable {
+import javax.swing.table.AbstractTableModel;
+
+public class InventoryModel extends AbstractTableModel implements Modellable {
 
 	private Viewable view;
 	private final ArrayList<Media> searchResult = new ArrayList<>();
@@ -335,11 +337,11 @@ public class InventoryModel implements Modellable {
 			if (Utility.isNumeric(query)){		
 				temp = "SELECT * FROM cd WHERE CDID = " + query;
 				try {
-					ResultSet resultSet = statement.executeQuery(temp);
-					ResultSetMetaData metaData = resultSet.getMetaData();
+					resultSet = statement.executeQuery(temp);
+					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
-					int numberOfRows = resultSet.getRow();
+					numberOfRows = resultSet.getRow();
 					resultSet.first();
 					if (numberOfRows > 0){
 						if (resultSet.getObject(2) != null)
@@ -359,11 +361,11 @@ public class InventoryModel implements Modellable {
 				}
 				temp = "SELECT * FROM dvd WHERE DVDID = " + query;
 				try {
-					ResultSet resultSet = statement.executeQuery(temp);
-					ResultSetMetaData metaData = resultSet.getMetaData();
+					resultSet = statement.executeQuery(temp);
+					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
-					int numberOfRows = resultSet.getRow();
+					numberOfRows = resultSet.getRow();
 					resultSet.first();
 					if (numberOfRows > 0){
 						if (resultSet.getObject(2) != null)
@@ -383,11 +385,11 @@ public class InventoryModel implements Modellable {
 				}
 				temp = "SELECT * FROM book WHERE BookID = " + query;
 				try {
-					ResultSet resultSet = statement.executeQuery(temp);
-					ResultSetMetaData metaData = resultSet.getMetaData();
+					resultSet = statement.executeQuery(temp);
+					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
-					int numberOfRows = resultSet.getRow();
+					numberOfRows = resultSet.getRow();
 					resultSet.first();
 					if (numberOfRows > 0){
 						if (resultSet.getObject(2) != null)
@@ -412,11 +414,11 @@ public class InventoryModel implements Modellable {
 			else if (query.equals("return-all-cds")){
 				temp = "SELECT * FROM cd";
 				try {
-					ResultSet resultSet = statement.executeQuery(temp);
-					ResultSetMetaData metaData = resultSet.getMetaData();
+					resultSet = statement.executeQuery(temp);
+					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
-					int numberOfRows = resultSet.getRow();
+					numberOfRows = resultSet.getRow();
 					resultSet.first();
 					if (numberOfRows > 0){
 						do{
@@ -582,6 +584,56 @@ public class InventoryModel implements Modellable {
 		}
 
 	}
+	
+	@Override
+	public String getColumnName(int column) 
+	{ 
+		try {
+			return metaData.getColumnName(column+1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return "";
+	} 
 
+	@Override
+	public int getRowCount() 
+	{ 
+		return numberOfRows;
+	} 
+
+	@Override
+	public int getColumnCount() 
+	{ 
+		try {
+			return metaData.getColumnCount();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	} 
+
+	@Override
+	public Object getValueAt(int row, int column) 
+	{ 
+		try {
+			resultSet.absolute(row + 1);
+			return resultSet.getObject(column +1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+	@Override
+	public Class getColumnClass(int column) 
+	{ 
+		try {
+			String className = metaData.getColumnClassName(column + 1);
+			return Class.forName(className);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return Object.class;
+	}
 }
 

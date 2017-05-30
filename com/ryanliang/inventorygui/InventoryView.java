@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,8 +21,14 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 
 @SuppressWarnings("serial")
 public class InventoryView extends JFrame implements Viewable{
@@ -69,6 +76,11 @@ public class InventoryView extends JFrame implements Viewable{
 	private final JLabel searchResultLabel = new JLabel("Search result: ");
 	private JLabel searchResultStatus = new JLabel("");
 	private JLabel itemDetails = new JLabel("");
+	
+	private JTable table = null;
+	private JScrollPane scrollPane = null;
+	private int tableRowNum = 0;
+	private boolean tableRowSelected = false; 
 	
 	public InventoryView(Controllable controller) {
 		super("Media inventory system");
@@ -343,7 +355,8 @@ public class InventoryView extends JFrame implements Viewable{
 				validate();
 				//reset counter
 				resultCounter = 0;
-				displayResult(searchResult[0]);	
+				//displayResult(searchResult[0]);
+				displayTable();
 				
 				setSearchResultStatusVisible(true);
 			}
@@ -448,4 +461,46 @@ public class InventoryView extends JFrame implements Viewable{
 		itemDetails.setText("");
 	}
 
+	private void displayTable() {
+		//Remove old table from frame
+		if (scrollPane != null)
+			remove(scrollPane);
+		
+		table = new JTable((TableModel) model); 
+        //table.getSelectionModel().addListSelectionListener(new RowListener());
+        //table.getColumnModel().getSelectionModel().addListSelectionListener(new ColumnListener());
+       // table.setAutoCreateRowSorter(true);
+		scrollPane = new JScrollPane(table);
+		add(scrollPane);
+		
+		//Show total number of contacts on status bar
+		//totalContact = contacts.getSize();
+		//totalContactsStatus.setText(String.valueOf(totalContact));
+		//statusPanel.setPreferredSize(new Dimension(getWidth(), 25));
+		//statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
+		//totalContactsLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		//totalContactsStatus.setHorizontalAlignment(SwingConstants.LEFT);
+		
+		//Refresh frame components in case table contents are changed.
+		validate();
+	}
+	
+    private class RowListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent event) {
+            if (event.getValueIsAdjusting()) {
+                return;
+            }
+            
+            tableRowNum = table.getSelectedRow();
+            tableRowSelected = true;
+        }
+    }
+ 
+    private class ColumnListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent event) {
+            if (event.getValueIsAdjusting()) {
+                return;
+            }
+        }
+    }
 }
