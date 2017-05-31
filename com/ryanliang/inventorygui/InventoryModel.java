@@ -263,6 +263,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 						IDCounter = Long.valueOf(counter);
 				}
 			}
+			//Create MediaID 1 if the database is empty.  This happens only once during the life of this application.
 			else{
 				temp = "INSERT INTO mediaID (MediaID, IDCounter) VALUES(1, 0)";
 				statement.execute(temp);
@@ -297,6 +298,10 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	public void deleteItem(String itemID) throws SQLException, IllegalStateException {
 		if (itemID != null){
 			String temp = "DELETE FROM cd WHERE CDID = " + itemID;
+			statement.execute(temp);
+			//repeat for dvd this line
+			//repeat for book this line
+			temp = "DELETE FROM inventory WHERE MediaID = " + itemID;
 			statement.execute(temp);
 		}
 		else 
