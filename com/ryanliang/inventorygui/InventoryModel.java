@@ -263,7 +263,10 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 						IDCounter = Long.valueOf(counter);
 				}
 			}
-
+			else{
+				temp = "INSERT INTO mediaID (MediaID, IDCounter) VALUES(1, 0)";
+				statement.execute(temp);
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
