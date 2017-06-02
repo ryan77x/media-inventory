@@ -182,8 +182,8 @@ public class InventoryView extends JFrame implements Viewable{
 
 		add(toolBar, BorderLayout.NORTH);
 		
-		add(westPanel, BorderLayout.WEST);
-		westPanel.add(new JLabel("      "));
+		//add(westPanel, BorderLayout.WEST);
+		//westPanel.add(new JLabel("      "));
 		
 		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
 		add(statusPanel, BorderLayout.SOUTH);
@@ -257,6 +257,9 @@ public class InventoryView extends JFrame implements Viewable{
 	private void searchItem() {
 		String input = JOptionPane.showInputDialog("Enter item ID number or a phrase"); 
 		if (input != null)
+			if (scrollPane != null)
+				remove(scrollPane);
+		
 			controller.searchItem(input.trim());
 	}
 
@@ -267,6 +270,9 @@ public class InventoryView extends JFrame implements Viewable{
 		
 		String input = JOptionPane.showInputDialog("Enter item ID number");
 		if (input != null){
+			if (scrollPane != null)
+				remove(scrollPane);
+			
 			controller.searchItemForEditing(input.trim());
 		}
 	}
@@ -278,6 +284,9 @@ public class InventoryView extends JFrame implements Viewable{
 		
 		String input = JOptionPane.showInputDialog("Enter item ID number");
 		if (input != null){
+			if (scrollPane != null)
+				remove(scrollPane);
+			
 			if (!input.equals("") && Utility.isNumeric(input))
 				controller.deleteItem(input.trim());
 		}
@@ -295,10 +304,14 @@ public class InventoryView extends JFrame implements Viewable{
 		openItemDialog(temp, "");
 		
 		if (itemDialog.getDone() == true){
+			if (scrollPane != null)
+				remove(scrollPane);
+			
 			Media item = itemDialog.getItem();
 			
 			controller.addItem(item, itemDialog.getQuantity());
-			displayResult(item);
+			//displayResult(item);
+			controller.searchItem(item.getID());
 		}
 		if (itemDialog != null){
 			itemDialog.initUI();
@@ -406,7 +419,7 @@ public class InventoryView extends JFrame implements Viewable{
 			String artist = item.getArtist();
 			temp = new CD(ID, title, description , genre, artist);
 			controller.editItem(temp, quantity); 
-			displayResult(temp);
+			//displayResult(temp);
 		}
 		else if (mm instanceof DVD){
 			DVD item = (DVD) mm;
@@ -414,7 +427,7 @@ public class InventoryView extends JFrame implements Viewable{
 			String cast = item.getCast();
 			temp = new DVD(ID, title, description , genre, cast);
 			controller.editItem(temp, quantity); 
-			displayResult(temp);
+			//displayResult(temp);
 		}
 		else if (mm instanceof Book){
 			Book item = (Book) mm;
@@ -423,8 +436,9 @@ public class InventoryView extends JFrame implements Viewable{
 			String ISBN = item.getISBN();
 			temp = new Book(ID, title, description , genre, author, ISBN);
 			controller.editItem(temp, quantity); 
-			displayResult(temp);
+			//displayResult(temp);
 		}
+		controller.searchItem(ID);
 
 	}
 
