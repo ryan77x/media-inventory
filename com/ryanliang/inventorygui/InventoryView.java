@@ -256,11 +256,12 @@ public class InventoryView extends JFrame implements Viewable{
 
 	private void searchItem() {
 		String input = JOptionPane.showInputDialog("Enter item ID number or a phrase"); 
-		if (input != null)
+		if (input != null){
 			if (scrollPane != null)
 				remove(scrollPane);
 		
 			controller.searchItem(input.trim());
+		}
 	}
 
 	private void editItem() {
@@ -286,9 +287,8 @@ public class InventoryView extends JFrame implements Viewable{
 		if (input != null){
 			if (scrollPane != null)
 				remove(scrollPane);
-			
-			if (!input.equals("") && Utility.isNumeric(input))
-				controller.deleteItem(input.trim());
+
+			controller.deleteItem(input);
 		}
 	}
 

@@ -174,79 +174,12 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 	@Override
 	public void saveData() {
-/*		try {
-			FileOutputStream cdOut = new FileOutputStream(CDFile, false);
-			CDList.store(cdOut, "CD List");
-			cdOut.close();
-
-			FileOutputStream dvdOut = new FileOutputStream(DVDFile, false);
-			DVDList.store(dvdOut, "DVD List");
-			dvdOut.close();
-
-			FileOutputStream bookOut = new FileOutputStream(bookFile, false);
-			bookList.store(bookOut, "Book List");
-			bookOut.close();
-
-			FileOutputStream inventoryOut = new FileOutputStream(inventoryFile, false);
-			inventory.store(inventoryOut, "Inventory");
-			inventoryOut.close();
-
-			FileOutputStream IDOut = new FileOutputStream(IDMemoryFile, false);
-			IDMemory.store(IDOut, "ID memory");
-			IDOut.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-*/	
+	//not used at this time
 	}
 	
 	@Override
 	public void loadData() {		
-/*		File fileCD = new File(CDFile);
-		File fileDVD = new File(DVDFile);
-		File fileBook = new File(bookFile);
-		File fileInventory = new File(inventoryFile);
-		File fileID = new File(IDMemoryFile);
-		
-		try {
-			if (fileCD.exists() && !fileCD.isDirectory()){
-				FileInputStream cdIn = new FileInputStream(CDFile);
-				CDList.load(cdIn);
-				cdIn.close();
-			}
 
-			if (fileDVD.exists() && !fileDVD.isDirectory()){
-				FileInputStream dvdIn = new FileInputStream(DVDFile);
-				DVDList.load(dvdIn);
-				dvdIn.close();
-			}
-
-			if (fileBook.exists() && !fileBook.isDirectory()){
-				FileInputStream bookIn = new FileInputStream(bookFile);
-				bookList.load(bookIn);
-				bookIn.close();
-			}
-			
-			if (fileInventory.exists() && !fileInventory.isDirectory()){
-				FileInputStream inventoryIn = new FileInputStream(inventoryFile);
-				inventory.load(inventoryIn);
-				inventoryIn.close();
-			}
-			
-			if (fileID.exists() && !fileID.isDirectory()){
-				FileInputStream IDIn = new FileInputStream(IDMemoryFile);
-				IDMemory.load(IDIn);
-				String tempID = IDMemory.getProperty("IDCounter");
-				
-				if (tempID != null)
-					IDCounter = Long.valueOf(tempID);
-				
-				IDIn.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-*/
 		String temp;
 		String counter;
 		
@@ -297,24 +230,23 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	@Override
 	public void deleteItem(String itemID) throws SQLException, IllegalStateException {
 		if (itemID != null){
-			String temp = "DELETE FROM cd WHERE CDID = " + itemID;
-			nonQueryStatement.execute(temp);
-			//repeat for dvd this line
-			//repeat for book this line
-			temp = "DELETE FROM inventory WHERE MediaID = " + itemID;
-			nonQueryStatement.execute(temp);
+			itemID = itemID.trim();
+			if (!itemID.equals("") && Utility.isNumeric(itemID)){
+				String temp = "DELETE FROM cd WHERE CDID = " + itemID;
+				nonQueryStatement.execute(temp);
+
+				temp = "DELETE FROM dvd WHERE DVDID = " + itemID;
+				nonQueryStatement.execute(temp);
+
+				temp = "DELETE FROM book WHERE BookID = " + itemID;
+				nonQueryStatement.execute(temp);
+
+				temp = "DELETE FROM inventory WHERE MediaID = " + itemID;
+				nonQueryStatement.execute(temp);
+			}
 		}
 		else 
-			System.out.println("deleteItem(String itemID) reference is null.");	
-/*		if (itemID != null){
-			CDList.remove(itemID);
-			DVDList.remove(itemID);
-			bookList.remove(itemID);
-			inventory.remove(itemID);
-		}
-		else 
-			System.out.println("deleteItem(String itemID) reference is null.");	
-*/			
+			System.out.println("deleteItem(String itemID) reference is null.");			
 	}
 
 	@Override
@@ -448,6 +380,70 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 								artist = resultSet.getObject(5).toString();
 
 							searchResult.add(new CD(ID, title, description, genre, artist));
+
+						}while (resultSet.next());
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			else if (query.equals("return-all-dvds")){
+				temp = "SELECT * FROM dvd";
+				try {
+					resultSet = queryStatement.executeQuery(temp);
+					metaData = resultSet.getMetaData();
+					//int numberOfColumns = metaData.getColumnCount();
+					resultSet.last();
+					numberOfRows = resultSet.getRow();
+					resultSet.first();
+					if (numberOfRows > 0){
+						do{
+							if (resultSet.getObject(1) != null)
+								ID = resultSet.getObject(1).toString();
+							if (resultSet.getObject(2) != null)
+								title = resultSet.getObject(2).toString();
+							if (resultSet.getObject(3) != null)
+								description = resultSet.getObject(3).toString();
+							if (resultSet.getObject(4) != null)
+								genre = resultSet.getObject(4).toString();
+							if (resultSet.getObject(5) != null)
+								cast = resultSet.getObject(5).toString();
+
+							searchResult.add(new DVD(ID, title, description, genre, cast));
+
+						}while (resultSet.next());
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			else if (query.equals("return-all-books")){
+				temp = "SELECT * FROM book";
+				try {
+					resultSet = queryStatement.executeQuery(temp);
+					metaData = resultSet.getMetaData();
+					//int numberOfColumns = metaData.getColumnCount();
+					resultSet.last();
+					numberOfRows = resultSet.getRow();
+					resultSet.first();
+					if (numberOfRows > 0){
+						do{
+							if (resultSet.getObject(1) != null)
+								ID = resultSet.getObject(1).toString();
+							if (resultSet.getObject(2) != null)
+								title = resultSet.getObject(2).toString();
+							if (resultSet.getObject(3) != null)
+								description = resultSet.getObject(3).toString();
+							if (resultSet.getObject(4) != null)
+								genre = resultSet.getObject(4).toString();
+							if (resultSet.getObject(5) != null)
+								author = resultSet.getObject(5).toString();
+							if (resultSet.getObject(6) != null)
+								ISBN = resultSet.getObject(6).toString();
+
+							searchResult.add(new Book(ID, title, description, genre, author, ISBN));
 
 						}while (resultSet.next());
 					}
