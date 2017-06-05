@@ -40,6 +40,7 @@ public class InventoryView extends JFrame implements Viewable{
 	private int resultCounter = 0;
 	private static String itemID = "0";	
 	private ItemDialog itemDialog = null;
+	private SearchDialog searchDialog = null;
 	
 	private final JMenuBar menuBar = new JMenuBar();
 	private final JMenu fileMenu = new JMenu("File");
@@ -59,18 +60,13 @@ public class InventoryView extends JFrame implements Viewable{
 	private final JButton newToolBarButton = new JButton("New"); 
 	private final JButton editToolBarButton = new JButton("Edit"); 
 	private final JButton deleteToolBarButton = new JButton("Delete"); 
-	private final JButton findToolBarButton = new JButton("Search"); 
-	private final JButton firstToolBarButton = new JButton("First"); 
-	private final JButton previousToolBarButton = new JButton("Previous"); 
-	private final JButton nextToolBarButton = new JButton("Next"); 
-	private final JButton lastToolBarButton = new JButton("Last"); 
+	private final JButton findToolBarButton = new JButton("Search");  
 	private final JButton CDsToolBarButton = new JButton("CDs"); 
 	private final JButton DVDsToolBarButton = new JButton("DVDs"); 
 	private final JButton BooksToolBarButton = new JButton("Books"); 
 	
 	private final JToolBar toolBar = new JToolBar();
 	
-	private final JPanel westPanel = new JPanel();
 	private final JPanel statusPanel = new JPanel();
 	
 	private final JLabel searchResultLabel = new JLabel("Search result: ");
@@ -132,11 +128,6 @@ public class InventoryView extends JFrame implements Viewable{
 		});
 		editToolBarButton.addActionListener(event -> editItem());
 		
-		nextToolBarButton.addActionListener(event -> nextItem());
-		previousToolBarButton.addActionListener(event -> previousItem());
-		firstToolBarButton.addActionListener(event -> firstItem());
-		lastToolBarButton.addActionListener(event -> lastItem());
-		
 		CDsToolBarButton.addActionListener(event -> getAllCDs());
 		DVDsToolBarButton.addActionListener(event -> getAllDVDs());
 		BooksToolBarButton.addActionListener(event -> getAllBooks());
@@ -174,17 +165,9 @@ public class InventoryView extends JFrame implements Viewable{
 		toolBar.add(BooksToolBarButton);
 		toolBar.addSeparator();
 		toolBar.add(findToolBarButton);
-		toolBar.addSeparator();
-		toolBar.add(firstToolBarButton);
-		toolBar.add(previousToolBarButton);
-		toolBar.add(nextToolBarButton);
-		toolBar.add(lastToolBarButton);
 
 		add(toolBar, BorderLayout.NORTH);
-		
-		//add(westPanel, BorderLayout.WEST);
-		//westPanel.add(new JLabel("      "));
-		
+				
 		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
 		add(statusPanel, BorderLayout.SOUTH);
 		statusPanel.add(searchResultLabel);
@@ -218,49 +201,39 @@ public class InventoryView extends JFrame implements Viewable{
 		controller.searchItem("return-all-books");
 	}
 	
-	private void lastItem() {
-		if (searchResult != null){
-			if (searchResult.length > 1){
-				resultCounter = searchResult.length - 1;
-				displayResult(searchResult[resultCounter]);		
-			}
-		}
-	}
-
-	private void firstItem() {
-		if (searchResult != null){
-			if (searchResult.length > 1){
-				resultCounter = 0;
-				displayResult(searchResult[resultCounter]);		
-			}	
-		}
-	}
-
-	private void nextItem() {
-		if (searchResult != null){
-			if (searchResult.length > 1 && (resultCounter < (searchResult.length-1))){
-				resultCounter++;
-				displayResult(searchResult[resultCounter]);		
-			}	
-		}
-	}
-
-	private void previousItem() {
-		if (searchResult != null){
-			if (searchResult.length > 1 && (resultCounter > 0)){
-				resultCounter--;
-				displayResult(searchResult[resultCounter]);		
-			}	
-		}
-	}
-
 	private void searchItem() {
-		String input = JOptionPane.showInputDialog("Enter item ID number or a phrase"); 
+	/*	String input = JOptionPane.showInputDialog("Enter item ID number or a phrase"); 
 		if (input != null){
 			if (scrollPane != null)
 				remove(scrollPane);
 		
 			controller.searchItem(input.trim());
+		}
+		
+	*/	
+		if (searchDialog == null)
+			searchDialog = new SearchDialog(this);
+		
+
+		searchDialog.resetRadioButtonGroup();
+		searchDialog.inputItemDetails(itemID);
+
+		
+		searchDialog.setLocationRelativeTo(this);
+		searchDialog.setDone(false);
+		searchDialog.setVisible(true);
+		
+		if (searchDialog.getDone() == true){
+			if (scrollPane != null)
+				remove(scrollPane);
+			
+			MediaCategory media = searchDialog.getMedia();
+			String search = searchDialog.getSearch();
+			
+			controller.searchItem(search, media);
+		}
+		if (searchDialog != null){
+			searchDialog.initUI();
 		}
 	}
 
@@ -368,7 +341,7 @@ public class InventoryView extends JFrame implements Viewable{
 				validate();
 				//reset counter
 				resultCounter = 0;
-				//displayResult(searchResult[0]);
+
 				displayTable();
 				
 				setSearchResultStatusVisible(true);
@@ -440,35 +413,6 @@ public class InventoryView extends JFrame implements Viewable{
 		}
 		controller.searchItem(ID);
 
-	}
-
-	private void displayResult(Media mm) {
-		if (mm instanceof CD){						
-			itemDetails.setText("<html>" + "<h3><font color=blue>Item ID</font></h3>" + mm.getID() + "<br>" 
-					+ "<h3><font color=blue>Quantity</font></h3>" + model.getItemQuantity(mm.getID()) + "<br>"
-					+ "<h3><font color=blue>Title</font></h3>" + mm.getTitle() + "<br>" 
-					+ "<h3><font color=blue>Artist(s)</font></h3>" + ((CD)mm).getArtist() + "<br>"
-					+ "<h3><font color=blue>Genre</font></h3>" + mm.getGenre() + "<br>" 
-					+ "<h3><font color=blue>Description</font></h3>" + mm.getDescription() + "<br>" +  "</html>");
-		}
-		else if (mm instanceof DVD){						
-			itemDetails.setText("<html>" + "<h3><font color=blue>Item ID</font></h3>" + mm.getID() + "<br>" 
-					+ "<h3><font color=blue>Quantity</font></h3>" + model.getItemQuantity(mm.getID()) + "<br>"
-					+ "<h3><font color=blue>Title</font></h3>" + mm.getTitle() + "<br>" 
-					+ "<h3><font color=blue>Cast(s)</font></h3>" + ((DVD)mm).getCast() + "<br>"
-					+ "<h3><font color=blue>Genre</font></h3>" + mm.getGenre() + "<br>" 
-					+ "<h3><font color=blue>Description</font></h3>" + mm.getDescription() + "<br>" +  "</html>");
-		}
-		else if (mm instanceof Book){						
-			itemDetails.setText("<html>" + "<h3><font color=blue>Item ID</font></h3>" + mm.getID() + "<br>" 
-					+ "<h3><font color=blue>Quantity</font></h3>" + model.getItemQuantity(mm.getID()) + "<br>"
-					+ "<h3><font color=blue>Title</font></h3>" + mm.getTitle() + "<br>" 
-					+ "<h3><font color=blue>Author(s)</font></h3>" + ((Book)mm).getAuthor() + "<br>"
-					+ "<h3><font color=blue>ISBN</font></h3>" + ((Book)mm).getISBN() + "<br>"
-					+ "<h3><font color=blue>Genre</font></h3>" + mm.getGenre() + "<br>" 
-					+ "<h3><font color=blue>Description</font></h3>" + mm.getDescription() + "<br>" +  "</html>");
-		}
-		validate();
 	}
 
 	private void clearItemDetails() {

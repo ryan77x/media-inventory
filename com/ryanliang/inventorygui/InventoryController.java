@@ -30,6 +30,12 @@ public class InventoryController implements Controllable {
 			model.searchItem(query);
 			
 		}
+		@Override
+		public void searchItem(String query, MediaCategory media) {
+			model.searchItem(query, media);
+			
+		}
+		
 		@Override	
 		public void searchItemForEditing(String itemID){
 			model.searchItemForEditing(itemID);

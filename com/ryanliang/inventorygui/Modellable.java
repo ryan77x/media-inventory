@@ -21,6 +21,7 @@ public interface Modellable {
 	public void deleteItem(String itemID) throws SQLException, IllegalStateException;
 	
 	public void searchItem(String query);
+	public void searchItem(String query, MediaCategory media); 
 	public Media[] getSearchResult();
 	
 	public void searchItemForEditing(String itemID);
@@ -30,6 +31,6 @@ public interface Modellable {
 	
 	public String getItemQuantity(String itemID); 
 	
-	public void disconnectFromDatabase(); 
+	public void disconnectFromDatabase();
 	
 }

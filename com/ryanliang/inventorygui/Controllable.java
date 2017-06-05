@@ -13,6 +13,7 @@ public interface Controllable {
 	public void loadData();
 
 	public void searchItem(String query);
+	public void searchItem(String query, MediaCategory media);
 	public void searchItemForEditing(String itemID);
 
 	public void addItem(Media media, String quantity);
