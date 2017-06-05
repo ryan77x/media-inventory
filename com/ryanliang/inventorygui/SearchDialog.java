@@ -66,7 +66,7 @@ public class SearchDialog extends JDialog implements ActionListener{
 		Dimension frameSize = frame.getSize();
 		int frameWidth = frameSize.width;
 		int frameHeight = frameSize.height;
-		setSize(frameWidth/3,frameHeight/3);
+		setSize(frameWidth/3,frameHeight/6);
 		
 		organizeUI();
 		addListeners();
@@ -150,7 +150,7 @@ public class SearchDialog extends JDialog implements ActionListener{
 
 		errorLabel.setForeground(Color.RED);
 
-		search = searchField.getText();
+		search = searchField.getText().trim();
 
 				
 		resetSettings();
@@ -214,6 +214,7 @@ public class SearchDialog extends JDialog implements ActionListener{
 
 	public void resetRadioButtonGroup() {
 		radioGroup.clearSelection();
+		searchField.setText("");
 	}
 
 	public void initUI() {

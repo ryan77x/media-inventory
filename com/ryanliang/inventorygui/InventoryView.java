@@ -25,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -85,7 +86,7 @@ public class InventoryView extends JFrame implements Viewable{
 		organizeUI();
 		addListeners();
 			
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 	}
 
 	private void addListeners() {
@@ -184,33 +185,25 @@ public class InventoryView extends JFrame implements Viewable{
     		controller.disconnectFromDatabase();
     		System.exit(0);
     	}
-    	else if (answer == JOptionPane.NO_OPTION)
+    	else if (answer == JOptionPane.NO_OPTION){
     		controller.disconnectFromDatabase();
     		System.exit(0);		
+    	}
     }
 
 	private void getAllCDs() {
-		controller.searchItem("return-all-cds");
+		controller.searchItem("", MediaCategory.CD);
 	}
 	
 	private void getAllDVDs() {
-		controller.searchItem("return-all-dvds");
+		controller.searchItem("", MediaCategory.DVD);
 	}
 	
 	private void getAllBooks() {
-		controller.searchItem("return-all-books");
+		controller.searchItem("", MediaCategory.BOOK);
 	}
 	
-	private void searchItem() {
-	/*	String input = JOptionPane.showInputDialog("Enter item ID number or a phrase"); 
-		if (input != null){
-			if (scrollPane != null)
-				remove(scrollPane);
-		
-			controller.searchItem(input.trim());
-		}
-		
-	*/	
+	private void searchItem() {	
 		if (searchDialog == null)
 			searchDialog = new SearchDialog(this);
 		
@@ -230,7 +223,16 @@ public class InventoryView extends JFrame implements Viewable{
 			MediaCategory media = searchDialog.getMedia();
 			String search = searchDialog.getSearch();
 			
-			controller.searchItem(search, media);
+			if (search != null){
+				if (scrollPane != null)
+					remove(scrollPane);
+				
+				if (!search.equals("") && Utility.isNumeric(search)){
+					controller.searchItem(search);
+				}
+				else
+					controller.searchItem(search, media);
+			}
 		}
 		if (searchDialog != null){
 			searchDialog.initUI();
