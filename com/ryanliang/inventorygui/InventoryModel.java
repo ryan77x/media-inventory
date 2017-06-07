@@ -6,6 +6,7 @@
 package com.ryanliang.inventorygui;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -18,11 +19,11 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	private Viewable view;
 	private final ArrayList<Media> searchResult = new ArrayList<>();
 
-	private static long IDCounter = 0;
+	private static int IDCounter = 0;
 	
 	private final Connection connection;
-	private final Statement nonQueryStatement;
-	private final Statement queryStatement;
+	private PreparedStatement nonQueryStatement;
+	private Statement queryStatement;
 	private ResultSet resultSet;
 	private ResultSetMetaData metaData;
 	private int numberOfRows;
@@ -31,7 +32,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	
 	public InventoryModel(String url, String username, String password) throws SQLException {
 		connection = DriverManager.getConnection(url, username, password);
-		nonQueryStatement = connection.createStatement();
+		nonQueryStatement = null;
 		queryStatement = connection.createStatement();
 		//statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		
@@ -64,23 +65,27 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		if (media != null && quantityA != null){
 			String quantity = quantityA;
 			String ID = media.getID();
-
+	
 			setData(media, SQLCommand.INSERT);
 			
 			//Modify only if quantity is not empty and is a number (not consisting of alphabetic characters)
 			String temp;
 			if (!quantity.equals("") && Utility.isNumeric(quantity)){
-				temp = "INSERT INTO inventory (MediaID, Quantity) VALUES(" + ID + ", " + quantity + ")";
+				temp = "INSERT INTO inventory (MediaID, Quantity) VALUES(?, ?)";
 				try {
-					nonQueryStatement.execute(temp);
+					nonQueryStatement = connection.prepareStatement(temp);
+					nonQueryStatement.setInt(1, Integer.valueOf(ID));
+					nonQueryStatement.setInt(2, Integer.valueOf(quantity));
+					nonQueryStatement.executeUpdate();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 			}
-
-			temp = "UPDATE mediaID SET IDCounter = " + (++IDCounter) + " WHERE MediaID = 1";
+			temp = "UPDATE mediaID SET IDCounter = ? WHERE MediaID = 1";
 			try {
-				nonQueryStatement.execute(temp);
+				nonQueryStatement = connection.prepareStatement(temp);
+				nonQueryStatement.setInt(1, ++IDCounter);
+				nonQueryStatement.executeUpdate();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -104,32 +109,68 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		
 		if (media instanceof CD){
 			String artist = ((CD) media).getArtist();
-			
+
 			artist = artist.trim().equals("")?none:artist;
-			if (command == SQLCommand.UPDATE)
-				temp = "UPDATE cd SET Title = '" + title + "', Description = '" + description + "', Genre = '" + genre + "', Artist = '" + artist + "' WHERE CDID = " + ID;
-			else if (command == SQLCommand.INSERT)
-				temp = "INSERT INTO cd (CDID, Title, Description, Genre, Artist) VALUES(" + ID + ", '" + title + "', '" + description + "', '" + genre + "', '" + artist + "'" + ")";
-			try {
-				if (temp != null)
-					nonQueryStatement.execute(temp);
-			} catch (SQLException e) {
-				e.printStackTrace();
+			if (command == SQLCommand.UPDATE){
+				temp = "UPDATE cd SET Title = ?, Description = ?, Genre = ?, Artist = ? WHERE CDID = ?";
+				try {
+					nonQueryStatement = connection.prepareStatement(temp);
+					nonQueryStatement.setString(1, title);
+					nonQueryStatement.setString(2, description);
+					nonQueryStatement.setString(3, genre);
+					nonQueryStatement.setString(4, artist);
+					nonQueryStatement.setInt(5, Integer.valueOf(ID));
+					nonQueryStatement.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			else if (command == SQLCommand.INSERT){
+				temp = "INSERT INTO cd (CDID, Title, Description, Genre, Artist) VALUES(?, ?, ?, ?, ?)";
+				try {
+					nonQueryStatement = connection.prepareStatement(temp);
+					nonQueryStatement.setInt(1, Integer.valueOf(ID));
+					nonQueryStatement.setString(2, title);
+					nonQueryStatement.setString(3, description);
+					nonQueryStatement.setString(4, genre);
+					nonQueryStatement.setString(5, artist);
+					nonQueryStatement.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		else if (media instanceof DVD){
 			String cast = ((DVD) media).getCast();
 			
 			cast = cast.trim().equals("")?none:cast;
-			if (command == SQLCommand.UPDATE)
-				temp = "UPDATE dvd SET Title = '" + title + "', Description = '" + description + "', Genre = '" + genre + "', Cast = '" + cast + "' WHERE DVDID = " + ID;
-			else if (command == SQLCommand.INSERT)
-				temp = "INSERT INTO dvd (DVDID, Title, Description, Genre, Cast) VALUES(" + ID + ", '" + title + "', '" + description + "', '" + genre + "', '" + cast + "'" + ")";
-			try {
-				if (temp != null)
-					nonQueryStatement.execute(temp);
-			} catch (SQLException e) {
-				e.printStackTrace();
+			if (command == SQLCommand.UPDATE){
+				temp = "UPDATE dvd SET Title = ?, Description = ?, Genre = ?, Cast = ? WHERE DVDID = ?";
+				try {
+					nonQueryStatement = connection.prepareStatement(temp);
+					nonQueryStatement.setString(1, title);
+					nonQueryStatement.setString(2, description);
+					nonQueryStatement.setString(3, genre);
+					nonQueryStatement.setString(4, cast);
+					nonQueryStatement.setInt(5, Integer.valueOf(ID));
+					nonQueryStatement.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			else if (command == SQLCommand.INSERT){
+				temp = "INSERT INTO dvd (DVDID, Title, Description, Genre, Cast) VALUES(?, ?, ?, ?, ?)";
+				try {
+					nonQueryStatement = connection.prepareStatement(temp);
+					nonQueryStatement.setInt(1, Integer.valueOf(ID));
+					nonQueryStatement.setString(2, title);
+					nonQueryStatement.setString(3, description);
+					nonQueryStatement.setString(4, genre);
+					nonQueryStatement.setString(5, cast);
+					nonQueryStatement.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		else if (media instanceof Book){
@@ -138,15 +179,35 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			
 			author = author.trim().equals("")?none:author;
 			ISBN = ISBN.trim().equals("")?none:ISBN;
-			if (command == SQLCommand.UPDATE)
-				temp = "UPDATE book SET Title = '" + title + "', Description = '" + description + "', Genre = '" + genre + "', Author = '" + author + "', ISBN = '" + ISBN + "' WHERE BookID = " + ID;
-			else if (command == SQLCommand.INSERT)
-				temp = "INSERT INTO book (BookID, Title, Description, Genre, Author, ISBN) VALUES(" + ID + ", '" + title + "', '" + description + "', '" + genre + "', '" + author + "', '" + ISBN + "'" + ")";
-			try {
-				if (temp != null)
-					nonQueryStatement.execute(temp);
-			} catch (SQLException e) {
-				e.printStackTrace();
+			if (command == SQLCommand.UPDATE){
+				temp = "UPDATE book SET Title = ?, Description = ?, Genre = ?, Author = ?, ISBN = ? WHERE BookID = ?";
+				try {
+					nonQueryStatement = connection.prepareStatement(temp);
+					nonQueryStatement.setString(1, title);
+					nonQueryStatement.setString(2, description);
+					nonQueryStatement.setString(3, genre);
+					nonQueryStatement.setString(4, author);
+					nonQueryStatement.setString(5, ISBN);
+					nonQueryStatement.setInt(6, Integer.valueOf(ID));
+					nonQueryStatement.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			else if (command == SQLCommand.INSERT){
+				temp = "INSERT INTO book (BookID, Title, Description, Genre, Author, ISBN) VALUES(?, ?, ?, ?, ?, ?)";
+				try {
+					nonQueryStatement = connection.prepareStatement(temp);
+					nonQueryStatement.setInt(1, Integer.valueOf(ID));
+					nonQueryStatement.setString(2, title);
+					nonQueryStatement.setString(3, description);
+					nonQueryStatement.setString(4, genre);
+					nonQueryStatement.setString(5, author);
+					nonQueryStatement.setString(6, ISBN);
+					nonQueryStatement.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -193,7 +254,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 				if (resultSet.getObject(2) != null){
 					counter = resultSet.getObject(2).toString();
 					if (counter != null)
-						IDCounter = Long.valueOf(counter);
+						IDCounter = Integer.valueOf(counter);
 				}
 			}
 			//Create MediaID 1 if the database is empty.  This happens only once during the life of this application.
