@@ -69,11 +69,11 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			setData(media, SQLCommand.INSERT);
 			
 			//Modify only if quantity is not empty and is a number (not consisting of alphabetic characters)
-			String temp;
+			String sqlString;
 			if (!quantity.equals("") && Utility.isNumeric(quantity)){
-				temp = "INSERT INTO inventory (MediaID, Quantity) VALUES(?, ?)";
+				sqlString = "INSERT INTO inventory (MediaID, Quantity) VALUES(?, ?)";
 				try {
-					nonQueryStatement = connection.prepareStatement(temp);
+					nonQueryStatement = connection.prepareStatement(sqlString);
 					nonQueryStatement.setInt(1, Integer.valueOf(ID));
 					nonQueryStatement.setInt(2, Integer.valueOf(quantity));
 					nonQueryStatement.executeUpdate();
@@ -81,9 +81,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 					e.printStackTrace();
 				}
 			}
-			temp = "UPDATE mediaID SET IDCounter = ? WHERE MediaID = 1";
+			sqlString = "UPDATE mediaID SET IDCounter = ? WHERE MediaID = 1";
 			try {
-				nonQueryStatement = connection.prepareStatement(temp);
+				nonQueryStatement = connection.prepareStatement(sqlString);
 				nonQueryStatement.setInt(1, ++IDCounter);
 				nonQueryStatement.executeUpdate();
 			} catch (SQLException e) {
@@ -96,8 +96,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	
 	private void setData(Media media, SQLCommand command) {		
 		String none = "None";
-		String temp = null;
-		String [] parameters;
+		String sqlString = null;
 
 		String ID = media.getID();
 		String title = media.getTitle();
@@ -110,92 +109,51 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		
 		if (media instanceof CD){
 			String artist = ((CD) media).getArtist();
-			parameters = new String[5];
 
 			artist = artist.trim().equals("")?none:artist;
 			if (command == SQLCommand.UPDATE){
-				temp = "UPDATE cd SET Title = ?, Description = ?, Genre = ?, Artist = ? WHERE CDID = ?";
-				parameters[0] = title;
-				parameters[1] = description;
-				parameters[2] = genre;
-				parameters[3] = artist;
-				parameters[4] = ID;
-		
-				updateTable(temp, parameters);
+				sqlString = "UPDATE cd SET Title = ?, Description = ?, Genre = ?, Artist = ? WHERE CDID = ?";
+				updateTable(sqlString, title, description, genre, artist, ID);
 			}
 			else if (command == SQLCommand.INSERT){
-				temp = "INSERT INTO cd (CDID, Title, Description, Genre, Artist) VALUES(?, ?, ?, ?, ?)";
-				parameters[0] = ID;
-				parameters[1] = title;
-				parameters[2] = description;
-				parameters[3] = genre;
-				parameters[4] = artist;
-				
-				insertToTable(temp, parameters);
+				sqlString = "INSERT INTO cd (CDID, Title, Description, Genre, Artist) VALUES(?, ?, ?, ?, ?)";
+				insertToTable(sqlString, ID, title, description, genre, artist);
 			}
 		}
 		else if (media instanceof DVD){
 			String cast = ((DVD) media).getCast();
-			parameters = new String[5];
 			
 			cast = cast.trim().equals("")?none:cast;
 			if (command == SQLCommand.UPDATE){
-				temp = "UPDATE dvd SET Title = ?, Description = ?, Genre = ?, Cast = ? WHERE DVDID = ?";
-				parameters[0] = title;
-				parameters[1] = description;
-				parameters[2] = genre;
-				parameters[3] = cast;
-				parameters[4] = ID;
-		
-				updateTable(temp, parameters);
+				sqlString = "UPDATE dvd SET Title = ?, Description = ?, Genre = ?, Cast = ? WHERE DVDID = ?";
+				updateTable(sqlString, title, description, genre, cast, ID);
 			}
 			else if (command == SQLCommand.INSERT){
-				temp = "INSERT INTO dvd (DVDID, Title, Description, Genre, Cast) VALUES(?, ?, ?, ?, ?)";
-				parameters[0] = ID;
-				parameters[1] = title;
-				parameters[2] = description;
-				parameters[3] = genre;
-				parameters[4] = cast;
-				
-				insertToTable(temp, parameters);
+				sqlString = "INSERT INTO dvd (DVDID, Title, Description, Genre, Cast) VALUES(?, ?, ?, ?, ?)";
+				insertToTable(sqlString, ID, title, description, genre, cast);
 			}
 		}
 		else if (media instanceof Book){
 			String author = ((Book) media).getAuthor();
 			String ISBN = ((Book) media).getISBN();
-			parameters = new String[6];
 			
 			author = author.trim().equals("")?none:author;
 			ISBN = ISBN.trim().equals("")?none:ISBN;
 			if (command == SQLCommand.UPDATE){
-				temp = "UPDATE book SET Title = ?, Description = ?, Genre = ?, Author = ?, ISBN = ? WHERE BookID = ?";
-				parameters[0] = title;
-				parameters[1] = description;
-				parameters[2] = genre;
-				parameters[3] = author;
-				parameters[4] = ISBN;
-				parameters[5] = ID;
-		
-				updateTable(temp, parameters);
+				sqlString = "UPDATE book SET Title = ?, Description = ?, Genre = ?, Author = ?, ISBN = ? WHERE BookID = ?";
+				updateTable(sqlString, title, description, genre, author, ISBN, ID);
 			}
 			else if (command == SQLCommand.INSERT){
-				temp = "INSERT INTO book (BookID, Title, Description, Genre, Author, ISBN) VALUES(?, ?, ?, ?, ?, ?)";
-				parameters[0] = ID;
-				parameters[1] = title;
-				parameters[2] = description;
-				parameters[3] = genre;
-				parameters[4] = author;
-				parameters[5] = ISBN;
-				
-				insertToTable(temp, parameters);
+				sqlString = "INSERT INTO book (BookID, Title, Description, Genre, Author, ISBN) VALUES(?, ?, ?, ?, ?, ?)";
+				insertToTable(sqlString, ID, title, description, genre, author, ISBN);
 			}
 		}
 	}
 	
-	private void insertToTable(String temp, String[] parameters) {
+	private void insertToTable(String sqlString, String... parameters) {
 		int size = parameters.length;
 		try {
-			nonQueryStatement = connection.prepareStatement(temp);
+			nonQueryStatement = connection.prepareStatement(sqlString);
 			
 			nonQueryStatement.setInt(1, Integer.valueOf(parameters[0]));
 			for (int ii = 1; ii < size; ii++){
@@ -207,10 +165,10 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		}
 	}
 
-	private void updateTable(String temp, String[] parameters) {
+	private void updateTable(String sqlString, String... parameters) {
 		int size = parameters.length;
 		try {
-			nonQueryStatement = connection.prepareStatement(temp);
+			nonQueryStatement = connection.prepareStatement(sqlString);
 			
 			for (int ii = 1; ii < size; ii++){
 				nonQueryStatement.setString(ii, parameters[ii-1]);
@@ -229,11 +187,11 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			setData(media, SQLCommand.UPDATE);
 
 			//Modify only if quantity is not empty and is a number (not consisting of alphabetic characters)
-			String temp;
+			String sqlString;
 			if (!quantity.equals("") && Utility.isNumeric(quantity)){
-				temp = "UPDATE inventory SET Quantity = " + quantity + " WHERE MediaID = " + ID;
+				sqlString = "UPDATE inventory SET Quantity = " + quantity + " WHERE MediaID = " + ID;
 				try {
-					nonQueryStatement.execute(temp);
+					nonQueryStatement.execute(sqlString);
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -251,12 +209,12 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	@Override
 	public void loadData() {		
 
-		String temp;
+		String sqlString;
 		String counter;
 		
-		temp = "SELECT * FROM mediaID WHERE MediaID = 1";
+		sqlString = "SELECT * FROM mediaID WHERE MediaID = 1";
 		try {
-			ResultSet resultSet = queryStatement.executeQuery(temp);
+			ResultSet resultSet = queryStatement.executeQuery(sqlString);
 			resultSet.last();
 			int numberOfRows = resultSet.getRow();
 			resultSet.first();
@@ -269,8 +227,8 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			}
 			//Create MediaID 1 if the database is empty.  This happens only once during the life of this application.
 			else{
-				temp = "INSERT INTO mediaID (MediaID, IDCounter) VALUES(1, 0)";
-				nonQueryStatement.execute(temp);
+				sqlString = "INSERT INTO mediaID (MediaID, IDCounter) VALUES(1, 0)";
+				nonQueryStatement.execute(sqlString);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -319,17 +277,17 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		if (itemID != null){
 			itemID = itemID.trim();
 			if (!itemID.equals("") && Utility.isNumeric(itemID)){
-				String temp = "DELETE FROM cd WHERE CDID = " + itemID;
-				nonQueryStatement.execute(temp);
+				String sqlString = "DELETE FROM cd WHERE CDID = " + itemID;
+				nonQueryStatement.execute(sqlString);
 
-				temp = "DELETE FROM dvd WHERE DVDID = " + itemID;
-				nonQueryStatement.execute(temp);
+				sqlString = "DELETE FROM dvd WHERE DVDID = " + itemID;
+				nonQueryStatement.execute(sqlString);
 
-				temp = "DELETE FROM book WHERE BookID = " + itemID;
-				nonQueryStatement.execute(temp);
+				sqlString = "DELETE FROM book WHERE BookID = " + itemID;
+				nonQueryStatement.execute(sqlString);
 
-				temp = "DELETE FROM inventory WHERE MediaID = " + itemID;
-				nonQueryStatement.execute(temp);
+				sqlString = "DELETE FROM inventory WHERE MediaID = " + itemID;
+				nonQueryStatement.execute(sqlString);
 			}
 		}
 		else 
@@ -347,7 +305,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 	
 	private void searchItemHelper(String query) {	
-		String temp = null;
+		String sqlString = null;
 		//String value;
 
 		String ID = "";
@@ -361,9 +319,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 		//ID based search
 		while (true){
-			temp = "SELECT * FROM cd WHERE CDID = " + query;
+			sqlString = "SELECT * FROM cd WHERE CDID = " + query;
 			try {
-				resultSet = queryStatement.executeQuery(temp);
+				resultSet = queryStatement.executeQuery(sqlString);
 				metaData = resultSet.getMetaData();
 				//int numberOfColumns = metaData.getColumnCount();
 				resultSet.last();
@@ -386,9 +344,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			temp = "SELECT * FROM dvd WHERE DVDID = " + query;
+			sqlString = "SELECT * FROM dvd WHERE DVDID = " + query;
 			try {
-				resultSet = queryStatement.executeQuery(temp);
+				resultSet = queryStatement.executeQuery(sqlString);
 				metaData = resultSet.getMetaData();
 				//int numberOfColumns = metaData.getColumnCount();
 				resultSet.last();
@@ -411,9 +369,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			temp = "SELECT * FROM book WHERE BookID = " + query;
+			sqlString = "SELECT * FROM book WHERE BookID = " + query;
 			try {
-				resultSet = queryStatement.executeQuery(temp);
+				resultSet = queryStatement.executeQuery(sqlString);
 				metaData = resultSet.getMetaData();
 				//int numberOfColumns = metaData.getColumnCount();
 				resultSet.last();
@@ -443,7 +401,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 	
 	private void searchItemHelper(String query, MediaCategory media) {
-		String temp = null;
+		String sqlString = null;
 		//String value;
 		
 		String ID = "";
@@ -459,9 +417,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			//Word phrase based search
 
 			if (media == MediaCategory.CD){
-				temp = "SELECT * FROM cd WHERE Title LIKE '%" + query + "%' OR Description LIKE '%" + query + "%' OR Genre LIKE '%" + query + "%' OR Artist LIKE '%" + query + "%'";
+				sqlString = "SELECT * FROM cd WHERE Title LIKE '%" + query + "%' OR Description LIKE '%" + query + "%' OR Genre LIKE '%" + query + "%' OR Artist LIKE '%" + query + "%'";
 				try {
-					resultSet = queryStatement.executeQuery(temp);
+					resultSet = queryStatement.executeQuery(sqlString);
 					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
@@ -491,9 +449,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 			}
 			else if (media == MediaCategory.DVD){
-				temp = "SELECT * FROM dvd WHERE Title LIKE '%" + query + "%' OR Description LIKE '%" + query + "%' OR Genre LIKE '%" + query + "%' OR Cast LIKE '%" + query + "%'";
+				sqlString = "SELECT * FROM dvd WHERE Title LIKE '%" + query + "%' OR Description LIKE '%" + query + "%' OR Genre LIKE '%" + query + "%' OR Cast LIKE '%" + query + "%'";
 				try {
-					resultSet = queryStatement.executeQuery(temp);
+					resultSet = queryStatement.executeQuery(sqlString);
 					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
@@ -523,9 +481,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 			}
 			else if (media == MediaCategory.BOOK){
-				temp = "SELECT * FROM book WHERE Title LIKE '%" + query + "%' OR Description LIKE '%" + query + "%' OR Genre LIKE '%" + query + "%' OR Author LIKE '%" + query + "%' OR ISBN LIKE '%" + query + "%'";
+				sqlString = "SELECT * FROM book WHERE Title LIKE '%" + query + "%' OR Description LIKE '%" + query + "%' OR Genre LIKE '%" + query + "%' OR Author LIKE '%" + query + "%' OR ISBN LIKE '%" + query + "%'";
 				try {
-					resultSet = queryStatement.executeQuery(temp);
+					resultSet = queryStatement.executeQuery(sqlString);
 					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
@@ -558,9 +516,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		else{
 			//simply return all CDs, DVDs or Books
 			if (media == MediaCategory.CD){
-				temp = "SELECT * FROM cd";
+				sqlString = "SELECT * FROM cd";
 				try {
-					resultSet = queryStatement.executeQuery(temp);
+					resultSet = queryStatement.executeQuery(sqlString);
 					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
@@ -589,9 +547,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 				}
 			}
 			else if (media == MediaCategory.DVD){
-				temp = "SELECT * FROM dvd";
+				sqlString = "SELECT * FROM dvd";
 				try {
-					resultSet = queryStatement.executeQuery(temp);
+					resultSet = queryStatement.executeQuery(sqlString);
 					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
@@ -620,9 +578,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 				}
 			}
 			else if (media == MediaCategory.BOOK){
-				temp = "SELECT * FROM book";
+				sqlString = "SELECT * FROM book";
 				try {
-					resultSet = queryStatement.executeQuery(temp);
+					resultSet = queryStatement.executeQuery(sqlString);
 					metaData = resultSet.getMetaData();
 					//int numberOfColumns = metaData.getColumnCount();
 					resultSet.last();
@@ -697,12 +655,12 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			return null;
 		}
 		 */
-		String temp;
+		String sqlString;
 		String quantity = "0";
 		if (itemID != null){
-			temp = "SELECT * FROM inventory WHERE MediaID = " + itemID;
+			sqlString = "SELECT * FROM inventory WHERE MediaID = " + itemID;
 			try {
-				ResultSet resultSet = queryStatement.executeQuery(temp);
+				ResultSet resultSet = queryStatement.executeQuery(sqlString);
 				ResultSetMetaData metaData = resultSet.getMetaData();
 				resultSet.last();
 				int numberOfRows = resultSet.getRow();
