@@ -97,7 +97,8 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	private void setData(Media media, SQLCommand command) {		
 		String none = "None";
 		String temp = null;
-		
+		String [] parameters;
+
 		String ID = media.getID();
 		String title = media.getTitle();
 		String description = media.getDescription();
@@ -109,106 +110,115 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		
 		if (media instanceof CD){
 			String artist = ((CD) media).getArtist();
+			parameters = new String[5];
 
 			artist = artist.trim().equals("")?none:artist;
 			if (command == SQLCommand.UPDATE){
 				temp = "UPDATE cd SET Title = ?, Description = ?, Genre = ?, Artist = ? WHERE CDID = ?";
-				try {
-					nonQueryStatement = connection.prepareStatement(temp);
-					nonQueryStatement.setString(1, title);
-					nonQueryStatement.setString(2, description);
-					nonQueryStatement.setString(3, genre);
-					nonQueryStatement.setString(4, artist);
-					nonQueryStatement.setInt(5, Integer.valueOf(ID));
-					nonQueryStatement.executeUpdate();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				parameters[0] = title;
+				parameters[1] = description;
+				parameters[2] = genre;
+				parameters[3] = artist;
+				parameters[4] = ID;
+		
+				updateTable(temp, parameters);
 			}
 			else if (command == SQLCommand.INSERT){
 				temp = "INSERT INTO cd (CDID, Title, Description, Genre, Artist) VALUES(?, ?, ?, ?, ?)";
-				try {
-					nonQueryStatement = connection.prepareStatement(temp);
-					nonQueryStatement.setInt(1, Integer.valueOf(ID));
-					nonQueryStatement.setString(2, title);
-					nonQueryStatement.setString(3, description);
-					nonQueryStatement.setString(4, genre);
-					nonQueryStatement.setString(5, artist);
-					nonQueryStatement.executeUpdate();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				parameters[0] = ID;
+				parameters[1] = title;
+				parameters[2] = description;
+				parameters[3] = genre;
+				parameters[4] = artist;
+				
+				insertToTable(temp, parameters);
 			}
 		}
 		else if (media instanceof DVD){
 			String cast = ((DVD) media).getCast();
+			parameters = new String[5];
 			
 			cast = cast.trim().equals("")?none:cast;
 			if (command == SQLCommand.UPDATE){
 				temp = "UPDATE dvd SET Title = ?, Description = ?, Genre = ?, Cast = ? WHERE DVDID = ?";
-				try {
-					nonQueryStatement = connection.prepareStatement(temp);
-					nonQueryStatement.setString(1, title);
-					nonQueryStatement.setString(2, description);
-					nonQueryStatement.setString(3, genre);
-					nonQueryStatement.setString(4, cast);
-					nonQueryStatement.setInt(5, Integer.valueOf(ID));
-					nonQueryStatement.executeUpdate();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				parameters[0] = title;
+				parameters[1] = description;
+				parameters[2] = genre;
+				parameters[3] = cast;
+				parameters[4] = ID;
+		
+				updateTable(temp, parameters);
 			}
 			else if (command == SQLCommand.INSERT){
 				temp = "INSERT INTO dvd (DVDID, Title, Description, Genre, Cast) VALUES(?, ?, ?, ?, ?)";
-				try {
-					nonQueryStatement = connection.prepareStatement(temp);
-					nonQueryStatement.setInt(1, Integer.valueOf(ID));
-					nonQueryStatement.setString(2, title);
-					nonQueryStatement.setString(3, description);
-					nonQueryStatement.setString(4, genre);
-					nonQueryStatement.setString(5, cast);
-					nonQueryStatement.executeUpdate();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				parameters[0] = ID;
+				parameters[1] = title;
+				parameters[2] = description;
+				parameters[3] = genre;
+				parameters[4] = cast;
+				
+				insertToTable(temp, parameters);
 			}
 		}
 		else if (media instanceof Book){
 			String author = ((Book) media).getAuthor();
 			String ISBN = ((Book) media).getISBN();
+			parameters = new String[6];
 			
 			author = author.trim().equals("")?none:author;
 			ISBN = ISBN.trim().equals("")?none:ISBN;
 			if (command == SQLCommand.UPDATE){
 				temp = "UPDATE book SET Title = ?, Description = ?, Genre = ?, Author = ?, ISBN = ? WHERE BookID = ?";
-				try {
-					nonQueryStatement = connection.prepareStatement(temp);
-					nonQueryStatement.setString(1, title);
-					nonQueryStatement.setString(2, description);
-					nonQueryStatement.setString(3, genre);
-					nonQueryStatement.setString(4, author);
-					nonQueryStatement.setString(5, ISBN);
-					nonQueryStatement.setInt(6, Integer.valueOf(ID));
-					nonQueryStatement.executeUpdate();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				parameters[0] = title;
+				parameters[1] = description;
+				parameters[2] = genre;
+				parameters[3] = author;
+				parameters[4] = ISBN;
+				parameters[5] = ID;
+		
+				updateTable(temp, parameters);
 			}
 			else if (command == SQLCommand.INSERT){
 				temp = "INSERT INTO book (BookID, Title, Description, Genre, Author, ISBN) VALUES(?, ?, ?, ?, ?, ?)";
-				try {
-					nonQueryStatement = connection.prepareStatement(temp);
-					nonQueryStatement.setInt(1, Integer.valueOf(ID));
-					nonQueryStatement.setString(2, title);
-					nonQueryStatement.setString(3, description);
-					nonQueryStatement.setString(4, genre);
-					nonQueryStatement.setString(5, author);
-					nonQueryStatement.setString(6, ISBN);
-					nonQueryStatement.executeUpdate();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				parameters[0] = ID;
+				parameters[1] = title;
+				parameters[2] = description;
+				parameters[3] = genre;
+				parameters[4] = author;
+				parameters[5] = ISBN;
+				
+				insertToTable(temp, parameters);
 			}
+		}
+	}
+	
+	private void insertToTable(String temp, String[] parameters) {
+		int size = parameters.length;
+		try {
+			nonQueryStatement = connection.prepareStatement(temp);
+			
+			nonQueryStatement.setInt(1, Integer.valueOf(parameters[0]));
+			for (int ii = 1; ii < size; ii++){
+				nonQueryStatement.setString(ii+1, parameters[ii]);
+			}
+			nonQueryStatement.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void updateTable(String temp, String[] parameters) {
+		int size = parameters.length;
+		try {
+			nonQueryStatement = connection.prepareStatement(temp);
+			
+			for (int ii = 1; ii < size; ii++){
+				nonQueryStatement.setString(ii, parameters[ii-1]);
+			}
+			nonQueryStatement.setInt(size, Integer.valueOf(parameters[size-1]));
+			nonQueryStatement.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 
