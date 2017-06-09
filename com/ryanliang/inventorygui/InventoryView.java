@@ -249,7 +249,9 @@ public class InventoryView extends JFrame implements Viewable{
 			if (scrollPane != null)
 				remove(scrollPane);
 			
-			controller.searchItemForEditing(input.trim());
+			input = input.trim();
+			if (!input.equals("") && Utility.isNumeric(input))
+				controller.searchItemForEditing(input.trim());
 		}
 	}
 
@@ -262,7 +264,9 @@ public class InventoryView extends JFrame implements Viewable{
 		if (input != null){
 			if (scrollPane != null)
 				remove(scrollPane);
-
+			
+			input = input.trim();
+			if (!input.equals("") && Utility.isNumeric(input))
 			controller.deleteItem(input);
 		}
 	}
