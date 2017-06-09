@@ -61,9 +61,8 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		}
 	}
 	@Override
-	public void addItem(Media media, String quantityA) {
-		if (media != null && quantityA != null){
-			String quantity = quantityA;
+	public void addItem(Media media, String quantity) {
+		if (media != null && quantity != null){
 			String ID = media.getID();
 	
 			setData(media, SQLCommand.INSERT);
@@ -151,6 +150,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 	
 	private void insertToTable(String sqlString, String... parameters) {
+		
+		//***Do not modify this method until all callers (users) of this method are not affected.***
+		
 		int size = parameters.length;
 		try {
 			nonQueryStatement = connection.prepareStatement(sqlString);
@@ -166,6 +168,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 
 	private void updateTable(String sqlString, String... parameters) {
+		
+		//***Do not modify this method until all callers (users) of this method are not affected.***
+		
 		int size = parameters.length;
 		try {
 			nonQueryStatement = connection.prepareStatement(sqlString);
@@ -180,6 +185,20 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		}
 	}
 
+	private void deleteFromTable(String sqlString, String... parameters) {
+		
+		//***Do not modify this method until all callers (users) of this method are not affected.***
+		
+		try {
+			nonQueryStatement = connection.prepareStatement(sqlString);
+			
+			nonQueryStatement.setInt(1, Integer.valueOf(parameters[0]));
+			nonQueryStatement.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public void editItem(Media media, String quantity) {
 		if (media != null && quantity != null){
@@ -225,10 +244,13 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 						IDCounter = Integer.valueOf(counter);
 				}
 			}
-			//Create MediaID 1 if the database is empty.  This happens only once during the life of this application.
+			//Create MediaID "1" if the database is empty.  This happens only once during the life of this application.
 			else{
-				sqlString = "INSERT INTO mediaID (MediaID, IDCounter) VALUES(1, 0)";
-				nonQueryStatement.execute(sqlString);
+				sqlString = "INSERT INTO mediaID (MediaID, IDCounter) VALUES(?, ?)";
+				nonQueryStatement = connection.prepareStatement(sqlString);
+				nonQueryStatement.setInt(1, 1);
+				nonQueryStatement.setInt(2, 0);
+				nonQueryStatement.executeUpdate();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -277,17 +299,21 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		if (itemID != null){
 			itemID = itemID.trim();
 			if (!itemID.equals("") && Utility.isNumeric(itemID)){
-				String sqlString = "DELETE FROM cd WHERE CDID = " + itemID;
-				nonQueryStatement.execute(sqlString);
+				String sqlString = "DELETE FROM cd WHERE CDID = ?";
+				deleteFromTable(sqlString, itemID);
+/*				
+				nonQueryStatement = connection.prepareStatement(sqlString);
+				nonQueryStatement.setInt(1, Integer.valueOf(itemID));
+				nonQueryStatement.executeUpdate();
+*/
+				sqlString = "DELETE FROM dvd WHERE DVDID = ?";
+				deleteFromTable(sqlString, itemID);
 
-				sqlString = "DELETE FROM dvd WHERE DVDID = " + itemID;
-				nonQueryStatement.execute(sqlString);
+				sqlString = "DELETE FROM book WHERE BookID = ?";
+				deleteFromTable(sqlString, itemID);
 
-				sqlString = "DELETE FROM book WHERE BookID = " + itemID;
-				nonQueryStatement.execute(sqlString);
-
-				sqlString = "DELETE FROM inventory WHERE MediaID = " + itemID;
-				nonQueryStatement.execute(sqlString);
+				sqlString = "DELETE FROM inventory WHERE MediaID = ?";
+				deleteFromTable(sqlString, itemID);
 			}
 		}
 		else 
