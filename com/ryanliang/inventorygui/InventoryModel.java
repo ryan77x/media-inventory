@@ -64,11 +64,12 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	public void addItem(Media media, String quantity) {
 		if (media != null && quantity != null){
 			String ID = media.getID();
+			String sqlString = null;
 	
+			//Save data to database media tables
 			setData(media, SQLCommand.INSERT);
 			
-			//Modify only if quantity is not empty and is a number (not consisting of alphabetic characters)
-			String sqlString;
+			//Save data to database media inventory table
 			if (!quantity.equals("") && Utility.isNumeric(quantity)){
 				sqlString = "INSERT INTO inventory (MediaID, Quantity) VALUES(?, ?)";
 				try {
@@ -80,6 +81,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 					e.printStackTrace();
 				}
 			}
+			//Save data to database media ID table
 			sqlString = "UPDATE mediaID SET IDCounter = ? WHERE MediaID = 1";
 			try {
 				nonQueryStatement = connection.prepareStatement(sqlString);
@@ -151,7 +153,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	
 	private void insertToTable(String sqlString, String... parameters) {
 		
-		//***Do not modify this method until all callers (users) of this method are not affected.***
+		//***Do not modify this method until all callers of this method are not affected within this class.***
 		
 		int size = parameters.length;
 		try {
@@ -169,7 +171,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 	private void updateTable(String sqlString, String... parameters) {
 		
-		//***Do not modify this method until all callers (users) of this method are not affected.***
+		//***Do not modify this method until all callers of this method are not affected within this class.***
 		
 		int size = parameters.length;
 		try {
@@ -187,7 +189,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 	private void deleteFromTable(String sqlString, String... parameters) {
 		
-		//***Do not modify this method until all callers (users) of this method are not affected.***
+		//***Do not modify this method until all callers of this method are not affected within this class.***
 		
 		try {
 			nonQueryStatement = connection.prepareStatement(sqlString);
@@ -199,31 +201,26 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		}
 	}
 	private boolean queryTable(MediaCategory media, String sqlString, String... parameters) {
-		boolean multipleParameters = false;
+		
+		//***Do not modify this method until all callers of this method are not affected within this class.***
+		
 		int size = parameters.length;
 		String ID = null;
 		String title = "";
 		String description = "";
 		String genre = "";
-			
-		if (size > 1)
-			multipleParameters = true;
 
 		try {
 			queryStatement = connection.prepareStatement(sqlString);
 			
-			if (multipleParameters){
-				System.out.println(size);
+			if (size > 1){
 				for (int ii = 1; ii <= size; ii++){
-					System.out.println(ii);
-					queryStatement.setString(ii, parameters[ii-1]);
+					queryStatement.setString(ii, "%" + parameters[ii-1] + "%");
 				}
 			}
-			else{	
-				//ID = parameters[0];
+			else if (size == 1 && !parameters[0].equals(""))	
 				queryStatement.setInt(1, Integer.valueOf(parameters[0]));
-			}
-
+			
 			resultSet = queryStatement.executeQuery();
 			metaData = resultSet.getMetaData();
 			resultSet.last();
@@ -256,12 +253,14 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 							searchResult.add(new Book(ID, title, description, genre, author, ISBN));
 						}
 					}
+					//Record match found.
 					return true;
 				}while (resultSet.next());
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		//Record match not found.
 		return false;
 	}
 	@Override
@@ -303,7 +302,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		try {
 			queryStatement = connection.prepareStatement(sqlString);
 			queryStatement.setInt(1, 1);
-			ResultSet resultSet = queryStatement.executeQuery();
+			resultSet = queryStatement.executeQuery();
 			resultSet.last();
 			int numberOfRows = resultSet.getRow();
 			resultSet.first();
@@ -371,11 +370,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			if (!itemID.equals("") && Utility.isNumeric(itemID)){
 				String sqlString = "DELETE FROM cd WHERE CDID = ?";
 				deleteFromTable(sqlString, itemID);
-/*				
-				nonQueryStatement = connection.prepareStatement(sqlString);
-				nonQueryStatement.setInt(1, Integer.valueOf(itemID));
-				nonQueryStatement.executeUpdate();
-*/
+				
 				sqlString = "DELETE FROM dvd WHERE DVDID = ?";
 				deleteFromTable(sqlString, itemID);
 
@@ -423,239 +418,37 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	
 	private void searchItemHelper(String query, MediaCategory media) {
 		String sqlString = null;
-		//String value;
-		
-		String ID = "";
-		String title = "";
-		String description = "";
-		String genre = "";
-		String artist = "";
-		String cast = "";
-		String author = "";
-		String ISBN = "";
 
+		//Word phrase based search
 		if (!query.equals("")){
-			//Word phrase based search
-
 			if (media == MediaCategory.CD){
-				sqlString = "SELECT * FROM cd WHERE Title LIKE '%?%' OR Description LIKE '%?%' OR Genre LIKE '%?%' OR Artist LIKE '%?%'";
+				sqlString = "SELECT * FROM cd WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Artist LIKE ?";
 				queryTable(MediaCategory.CD, sqlString, query, query, query, query);
-/*				try {
-					resultSet = queryStatement.executeQuery(sqlString);
-					metaData = resultSet.getMetaData();
-					//int numberOfColumns = metaData.getColumnCount();
-					resultSet.last();
-					numberOfRows = resultSet.getRow();
-					resultSet.first();
-					if (numberOfRows > 0){
-						do{
-							if (resultSet.getObject(1) != null)
-								ID = resultSet.getObject(1).toString();
-							if (resultSet.getObject(2) != null)
-								title = resultSet.getObject(2).toString();
-							if (resultSet.getObject(3) != null)
-								description = resultSet.getObject(3).toString();
-							if (resultSet.getObject(4) != null)
-								genre = resultSet.getObject(4).toString();
-							if (resultSet.getObject(5) != null)
-								artist = resultSet.getObject(5).toString();
-
-							searchResult.add(new CD(ID, title, description, genre, artist));
-
-						}while (resultSet.next());
-					}
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-*/
 			}
 			else if (media == MediaCategory.DVD){
-				sqlString = "SELECT * FROM dvd WHERE Title LIKE '%" + query + "%' OR Description LIKE '%" + query + "%' OR Genre LIKE '%" + query + "%' OR Cast LIKE '%" + query + "%'";
-				try {
-					resultSet = queryStatement.executeQuery(sqlString);
-					metaData = resultSet.getMetaData();
-					//int numberOfColumns = metaData.getColumnCount();
-					resultSet.last();
-					numberOfRows = resultSet.getRow();
-					resultSet.first();
-					if (numberOfRows > 0){
-						do{
-							if (resultSet.getObject(1) != null)
-								ID = resultSet.getObject(1).toString();
-							if (resultSet.getObject(2) != null)
-								title = resultSet.getObject(2).toString();
-							if (resultSet.getObject(3) != null)
-								description = resultSet.getObject(3).toString();
-							if (resultSet.getObject(4) != null)
-								genre = resultSet.getObject(4).toString();
-							if (resultSet.getObject(5) != null)
-								cast = resultSet.getObject(5).toString();
-
-							searchResult.add(new DVD(ID, title, description, genre, cast));
-
-						}while (resultSet.next());
-					}
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-
+				sqlString = "SELECT * FROM dvd WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Cast LIKE ?";
+				queryTable(MediaCategory.DVD, sqlString, query, query, query, query);
 			}
 			else if (media == MediaCategory.BOOK){
-				sqlString = "SELECT * FROM book WHERE Title LIKE '%" + query + "%' OR Description LIKE '%" + query + "%' OR Genre LIKE '%" + query + "%' OR Author LIKE '%" + query + "%' OR ISBN LIKE '%" + query + "%'";
-				try {
-					resultSet = queryStatement.executeQuery(sqlString);
-					metaData = resultSet.getMetaData();
-					//int numberOfColumns = metaData.getColumnCount();
-					resultSet.last();
-					numberOfRows = resultSet.getRow();
-					resultSet.first();
-					if (numberOfRows > 0){
-						do{
-							if (resultSet.getObject(1) != null)
-								ID = resultSet.getObject(1).toString();
-							if (resultSet.getObject(2) != null)
-								title = resultSet.getObject(2).toString();
-							if (resultSet.getObject(3) != null)
-								description = resultSet.getObject(3).toString();
-							if (resultSet.getObject(4) != null)
-								genre = resultSet.getObject(4).toString();
-							if (resultSet.getObject(5) != null)
-								artist = resultSet.getObject(5).toString();
-
-							searchResult.add(new CD(ID, title, description, genre, artist));
-
-						}while (resultSet.next());
-					}
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-
+				sqlString = "SELECT * FROM book WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Author LIKE ? OR ISBN LIKE ?";
+				queryTable(MediaCategory.BOOK, sqlString, query, query, query, query, query);
 			}
 		}
+		//simply return all CDs, DVDs or Books
 		else{
-			//simply return all CDs, DVDs or Books
 			if (media == MediaCategory.CD){
 				sqlString = "SELECT * FROM cd";
-				try {
-					resultSet = queryStatement.executeQuery(sqlString);
-					metaData = resultSet.getMetaData();
-					//int numberOfColumns = metaData.getColumnCount();
-					resultSet.last();
-					numberOfRows = resultSet.getRow();
-					resultSet.first();
-					if (numberOfRows > 0){
-						do{
-							if (resultSet.getObject(1) != null)
-								ID = resultSet.getObject(1).toString();
-							if (resultSet.getObject(2) != null)
-								title = resultSet.getObject(2).toString();
-							if (resultSet.getObject(3) != null)
-								description = resultSet.getObject(3).toString();
-							if (resultSet.getObject(4) != null)
-								genre = resultSet.getObject(4).toString();
-							if (resultSet.getObject(5) != null)
-								artist = resultSet.getObject(5).toString();
-
-							searchResult.add(new CD(ID, title, description, genre, artist));
-
-						}while (resultSet.next());
-					}
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				queryTable(MediaCategory.CD, sqlString, query);
 			}
 			else if (media == MediaCategory.DVD){
 				sqlString = "SELECT * FROM dvd";
-				try {
-					resultSet = queryStatement.executeQuery(sqlString);
-					metaData = resultSet.getMetaData();
-					//int numberOfColumns = metaData.getColumnCount();
-					resultSet.last();
-					numberOfRows = resultSet.getRow();
-					resultSet.first();
-					if (numberOfRows > 0){
-						do{
-							if (resultSet.getObject(1) != null)
-								ID = resultSet.getObject(1).toString();
-							if (resultSet.getObject(2) != null)
-								title = resultSet.getObject(2).toString();
-							if (resultSet.getObject(3) != null)
-								description = resultSet.getObject(3).toString();
-							if (resultSet.getObject(4) != null)
-								genre = resultSet.getObject(4).toString();
-							if (resultSet.getObject(5) != null)
-								cast = resultSet.getObject(5).toString();
-
-							searchResult.add(new DVD(ID, title, description, genre, cast));
-
-						}while (resultSet.next());
-					}
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				queryTable(MediaCategory.DVD, sqlString, query);
 			}
 			else if (media == MediaCategory.BOOK){
 				sqlString = "SELECT * FROM book";
-				try {
-					resultSet = queryStatement.executeQuery(sqlString);
-					metaData = resultSet.getMetaData();
-					//int numberOfColumns = metaData.getColumnCount();
-					resultSet.last();
-					numberOfRows = resultSet.getRow();
-					resultSet.first();
-					if (numberOfRows > 0){
-						do{
-							if (resultSet.getObject(1) != null)
-								ID = resultSet.getObject(1).toString();
-							if (resultSet.getObject(2) != null)
-								title = resultSet.getObject(2).toString();
-							if (resultSet.getObject(3) != null)
-								description = resultSet.getObject(3).toString();
-							if (resultSet.getObject(4) != null)
-								genre = resultSet.getObject(4).toString();
-							if (resultSet.getObject(5) != null)
-								author = resultSet.getObject(5).toString();
-							if (resultSet.getObject(6) != null)
-								ISBN = resultSet.getObject(6).toString();
-
-							searchResult.add(new Book(ID, title, description, genre, author, ISBN));
-
-						}while (resultSet.next());
-					}
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				queryTable(MediaCategory.BOOK, sqlString, query);
 			}
 		}
-
-	}
-	
-	private void searchResultHelper(String key, String str, MediaCategory media) {
-/*		String[] parts = str.split(delimiter);	
-		String title = parts[0]; 
-		String description = parts[1]; 
-		String genre = parts[2]; 
-		
-		if (media == MediaCategory.CD){
-			String artist = parts[3]; 
-			searchResult.add(new CD(key, title, description, genre, artist));
-		}
-		else if (media == MediaCategory.DVD){
-			String cast = parts[3]; 
-			searchResult.add(new DVD(key, title, description, genre, cast));
-		}
-		else if (media == MediaCategory.BOOK){
-			String author = parts[3]; 
-			String ISBN = parts[4]; 
-			searchResult.add(new Book(key, title, description, genre, author, ISBN));
-		}
-*/
 	}
 
 	@Override
@@ -673,31 +466,28 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 	@Override
 	public String getItemQuantity(String itemID) {
-		/*		if (itemID != null)
-			return inventory.getProperty(itemID);
-		else{ 
-			System.out.println("getItemQuantity(String itemID) reference is null.");
-			return null;
-		}
-		 */
+
 		String sqlString;
 		String quantity = "0";
 		if (itemID != null){
-			sqlString = "SELECT * FROM inventory WHERE MediaID = " + itemID;
-			try {
-				ResultSet resultSet = queryStatement.executeQuery(sqlString);
-				ResultSetMetaData metaData = resultSet.getMetaData();
-				resultSet.last();
-				int numberOfRows = resultSet.getRow();
-				resultSet.first();
-				if (numberOfRows > 0){
-					if (resultSet.getObject(2) != null){
-						quantity = resultSet.getObject(2).toString();
+			itemID = itemID.trim();
+			if (!itemID.equals("") && Utility.isNumeric(itemID)){
+				sqlString = "SELECT * FROM inventory WHERE MediaID = ?";
+				try {
+					queryStatement = connection.prepareStatement(sqlString);
+					queryStatement.setInt(1, Integer.valueOf(itemID));
+					resultSet = queryStatement.executeQuery();
+					resultSet.last();
+					int numberOfRows = resultSet.getRow();
+					resultSet.first();
+					if (numberOfRows > 0){
+						if (resultSet.getObject(2) != null){
+							quantity = resultSet.getObject(2).toString();
+						}
 					}
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
-
-			} catch (SQLException e) {
-				e.printStackTrace();
 			}
 			return quantity;
 		}
@@ -705,7 +495,6 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			System.out.println("getItemQuantity(String itemID) reference is null.");
 			return null;
 		}
-
 	}
 	
 	@Override

@@ -207,10 +207,7 @@ public class InventoryView extends JFrame implements Viewable{
 		if (searchDialog == null)
 			searchDialog = new SearchDialog(this);
 		
-
 		searchDialog.resetRadioButtonGroup();
-		searchDialog.inputItemDetails(itemID);
-
 		
 		searchDialog.setLocationRelativeTo(this);
 		searchDialog.setDone(false);
@@ -233,9 +230,6 @@ public class InventoryView extends JFrame implements Viewable{
 				else
 					controller.searchItem(search, media);
 			}
-		}
-		if (searchDialog != null){
-			searchDialog.initUI();
 		}
 	}
 
