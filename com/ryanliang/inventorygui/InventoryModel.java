@@ -37,6 +37,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		//statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		
 		connectedToDatabase = true;
+		loadData();
 	}
 	
 	@Override
@@ -298,6 +299,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		String sqlString;
 		String counter;
 		
+		//Obtain the next media ID for new media item and set it to IDCounter.
 		sqlString = "SELECT * FROM mediaID WHERE MediaID = ?";
 		try {
 			queryStatement = connection.prepareStatement(sqlString);

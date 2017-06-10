@@ -48,7 +48,6 @@ public class InventoryView extends JFrame implements Viewable{
 	private final JMenu editMenu = new JMenu("Edit");
 	private final JMenu helpMenu = new JMenu("Help");
 	
-	private final JMenuItem saveFileMenu = new JMenuItem("Save");
 	private final JMenuItem exitFileMenu = new JMenuItem("Exit");
 	
 	private final JMenuItem newEditMenu = new JMenuItem("New");
@@ -90,9 +89,6 @@ public class InventoryView extends JFrame implements Viewable{
 	}
 
 	private void addListeners() {
-		saveFileMenu.addActionListener(event -> {
-			controller.saveData();	
-		});
 		
 		exitFileMenu.addActionListener(event -> {
 			quitApp();
@@ -141,7 +137,6 @@ public class InventoryView extends JFrame implements Viewable{
 	}
 
 	private void organizeUI() {
-		fileMenu.add(saveFileMenu);
 		fileMenu.addSeparator();
 		fileMenu.add(exitFileMenu);
 		
@@ -179,15 +174,10 @@ public class InventoryView extends JFrame implements Viewable{
 	}
 
 	private void quitApp() {
-    	int answer = JOptionPane.showConfirmDialog(null, "Save data?");
+    	int answer = JOptionPane.showConfirmDialog(null, "Exit App?");
     	if (answer == JOptionPane.YES_OPTION){
-    		controller.saveData();
     		controller.disconnectFromDatabase();
     		System.exit(0);
-    	}
-    	else if (answer == JOptionPane.NO_OPTION){
-    		controller.disconnectFromDatabase();
-    		System.exit(0);		
     	}
     }
 
@@ -314,8 +304,6 @@ public class InventoryView extends JFrame implements Viewable{
 
 	@Override
 	public void start() {
-		controller.loadData();
-		
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screenSize = kit.getScreenSize();
 		int screenWidth = (int) (screenSize.width*0.8);
