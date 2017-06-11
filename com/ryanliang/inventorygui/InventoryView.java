@@ -10,9 +10,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.sql.SQLException;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -39,8 +37,9 @@ public class InventoryView extends JFrame implements Viewable{
 	private Modellable model;
 	
 	private Media [] searchResult;
-	private int resultCounter = 0;
-	private static String itemID = "0";	
+	private static String itemID = "0";
+	private String itemQuantity = "0";
+	
 	private ItemDialog itemDialog = null;
 	private SearchDialog searchDialog = null;
 	
@@ -67,12 +66,10 @@ public class InventoryView extends JFrame implements Viewable{
 	private final JButton BooksToolBarButton = new JButton("Books"); 
 	
 	private final JToolBar toolBar = new JToolBar();
-	
 	private final JPanel statusPanel = new JPanel();
 	
 	private final JLabel searchResultLabel = new JLabel("Search result: ");
 	private JLabel searchResultStatus = new JLabel("");
-	private JLabel itemDetails = new JLabel("");
 	
 	private JTable table = null;
 	private JScrollPane scrollPane = null;
@@ -101,29 +98,12 @@ public class InventoryView extends JFrame implements Viewable{
 		
 		newEditMenu.addActionListener(event -> newItem());
 		searchEditMenu.addActionListener(event -> searchItem());
-		deleteEditMenu.addActionListener(event -> {
-			try {
-				deleteItem();
-			} catch (IllegalStateException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		});
+		deleteEditMenu.addActionListener(event -> deleteItem());
 		editEditMenu.addActionListener(event -> editItem());
 		
 		newToolBarButton.addActionListener(event -> newItem());
 		findToolBarButton.addActionListener(event -> searchItem());
-		deleteToolBarButton.addActionListener(event -> {
-			try {
-				deleteItem();
-			} catch (IllegalStateException | SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		});
+		deleteToolBarButton.addActionListener(event -> deleteItem());
 		editToolBarButton.addActionListener(event -> editItem());
 		
 		CDsToolBarButton.addActionListener(event -> getAllCDs());
@@ -170,8 +150,6 @@ public class InventoryView extends JFrame implements Viewable{
 		statusPanel.add(searchResultLabel);
 		statusPanel.add(searchResultStatus);
 		setSearchResultStatusVisible(false);
-
-		add(itemDetails);
 	}
 
 	private void quitApp() {
@@ -205,16 +183,13 @@ public class InventoryView extends JFrame implements Viewable{
 		searchDialog.setVisible(true);
 		
 		if (searchDialog.getDone() == true){
-			if (scrollPane != null)
-				remove(scrollPane);
+			removeTable();
 			
 			MediaCategory media = searchDialog.getMedia();
 			String search = searchDialog.getSearch();
 			
-			if (search != null){
-				if (scrollPane != null)
-					remove(scrollPane);
-				
+			if (search != null){				
+				search = search.trim();
 				if (!search.equals("") && Utility.isNumeric(search)){
 					controller.searchItem(search);
 				}
@@ -224,52 +199,61 @@ public class InventoryView extends JFrame implements Viewable{
 		}
 	}
 
+	private void removeTable() {
+		if (scrollPane != null)
+			remove(scrollPane);
+	}
+
 	private void editItem() {
-		clearItemDetails();
-		setSearchResultStatusVisible(false);
-		searchResult = null;
+		String input;
+		String message = "Enter item ID number or select a table row then click the Edit button";
 		
-		String input = JOptionPane.showInputDialog("Enter item ID number");
+		setSearchResultStatusVisible(false);		
+		input = getItemID(message);
+		
 		if (input != null){
-			if (scrollPane != null)
-				remove(scrollPane);
-			
-			input = input.trim();
-			if (!input.equals("") && Utility.isNumeric(input))
-				controller.searchItemForEditing(input.trim());
+			removeTable();
+			controller.searchItemForEditing(input);
 		}
 	}
 
-	private void deleteItem() throws SQLException, IllegalStateException {
-		clearItemDetails();
-		setSearchResultStatusVisible(false);
-		searchResult = null;
+	private String getItemID(String message) {
+		String input; 
 		
-		String input = JOptionPane.showInputDialog("Enter item ID number");
+		//No need to input item ID if user already selected a JTable row.
+		if (tableRowSelected){
+			input = table.getValueAt(tableRowNum, 0).toString();
+			tableRowSelected = false;
+		}
+		else 
+			input = JOptionPane.showInputDialog(message);
+		
+		return input;
+	}
+
+	private void deleteItem(){
+		String input;
+		String message = "Enter item ID number or select a table row then click the Delete button";
+		
+		setSearchResultStatusVisible(false);	
+		input = getItemID(message);
+		
 		if (input != null){
-			if (scrollPane != null)
-				remove(scrollPane);
-			
-			input = input.trim();
-			if (!input.equals("") && Utility.isNumeric(input))
+			removeTable();
 			controller.deleteItem(input);
 		}
 	}
 
 	private void newItem() {
-		clearItemDetails();
 		setSearchResultStatusVisible(false);
-		searchResult = null;
-		
 		Media temp = null;
+		
 		//Generate item ID which will be needed in the openItemDialog()
 		controller.generateID();
 
 		openItemDialog(temp, "");
-		
 		if (itemDialog.getDone() == true){
-			if (scrollPane != null)
-				remove(scrollPane);
+			removeTable();
 			
 			Media item = itemDialog.getItem();
 			controller.addItem(item, itemDialog.getQuantity());
@@ -320,18 +304,11 @@ public class InventoryView extends JFrame implements Viewable{
 			searchResult = model.getSearchResult();
 			
 			if (searchResult.length < 1){
-				clearItemDetails();
 				setSearchResultStatusVisible(false);
 				JOptionPane.showMessageDialog(null, "Item does not exist", "alert", JOptionPane.ERROR_MESSAGE); 
 			}
 			else {
-				searchResultStatus.setText(String.valueOf((searchResult.length)));
-				validate();
-				//reset counter
-				resultCounter = 0;
-
-				displayTable();
-				
+				displayTable();	
 				setSearchResultStatusVisible(true);
 			}
 		}
@@ -346,6 +323,9 @@ public class InventoryView extends JFrame implements Viewable{
 		else if (ut == UpdateType.ID){
 			itemID = model.getID();
 		}
+		else if (ut == UpdateType.ITEM_QUANTITY){
+			itemQuantity = model.getItemQuantity();
+		}
 	}
 
 	private void setSearchResultStatusVisible(boolean v) {
@@ -355,7 +335,8 @@ public class InventoryView extends JFrame implements Viewable{
 	}
 
 	private void editResult(Media mm) {
-		openItemDialog(mm, model.getItemQuantity(mm.getID()));	
+		model.checkItemQuantity(mm.getID());
+		openItemDialog(mm, itemQuantity);	
 		
 		if (itemDialog.getDone() == true){	
 			editResultHelper(itemDialog.getItem());
@@ -400,33 +381,22 @@ public class InventoryView extends JFrame implements Viewable{
 
 	}
 
-	private void clearItemDetails() {
-		itemDetails.setText("");
-	}
-
 	private void displayTable() {
 		//Remove old table from frame
-		if (scrollPane != null)
-			remove(scrollPane);
+		removeTable();
 		
 		DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
 		leftRenderer.setHorizontalAlignment( SwingConstants.LEFT);
 		
 		table = new JTable((TableModel) model); 
 		table.setDefaultRenderer(Integer.class, leftRenderer);
-        //table.getSelectionModel().addListSelectionListener(new RowListener());
-        //table.getColumnModel().getSelectionModel().addListSelectionListener(new ColumnListener());
-       // table.setAutoCreateRowSorter(true);
+        table.getSelectionModel().addListSelectionListener(new RowListener());
+        table.getColumnModel().getSelectionModel().addListSelectionListener(new ColumnListener());
+        table.setAutoCreateRowSorter(true);
 		scrollPane = new JScrollPane(table);
 		add(scrollPane);
 		
-		//Show total number of contacts on status bar
-		//totalContact = contacts.getSize();
-		//totalContactsStatus.setText(String.valueOf(totalContact));
-		//statusPanel.setPreferredSize(new Dimension(getWidth(), 25));
-		//statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
-		//totalContactsLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		//totalContactsStatus.setHorizontalAlignment(SwingConstants.LEFT);
+		searchResultStatus.setText(String.valueOf((model.getNumberOfRows())));
 		
 		//Refresh frame components in case table contents are changed.
 		validate();

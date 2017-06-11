@@ -26,8 +26,11 @@ public interface Modellable {
 	public void generateID(); 
 	public String getID(); 
 	
-	public String getItemQuantity(String itemID); 
+	public void checkItemQuantity(String itemID); 
+	public String getItemQuantity();
 	
 	public void disconnectFromDatabase();
+
+	public int getNumberOfRows();
 	
 }

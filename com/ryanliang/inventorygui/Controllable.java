@@ -22,4 +22,6 @@ public interface Controllable {
 	public void generateID(); 
 	
 	public void disconnectFromDatabase();
+
+	public void checkItemQuantity(String itemID); 
 }

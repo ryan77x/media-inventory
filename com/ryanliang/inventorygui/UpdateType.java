@@ -6,5 +6,5 @@
 package com.ryanliang.inventorygui;
 public enum UpdateType {
 	
-	SEARCH_RESULT, ID, EDIT;
+	SEARCH_RESULT, ID, EDIT, ITEM_QUANTITY;
 }

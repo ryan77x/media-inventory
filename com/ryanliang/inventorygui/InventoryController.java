@@ -49,12 +49,16 @@ public class InventoryController implements Controllable {
 		}
 		@Override
 		public void generateID() {
-			model.generateID();
-			
+			model.generateID();	
 		}
 		
 		@Override
 		public void disconnectFromDatabase(){
 			model.disconnectFromDatabase();
+		}
+		
+		@Override
+		public void checkItemQuantity(String itemID){
+			model.checkItemQuantity(itemID);
 		}
 }

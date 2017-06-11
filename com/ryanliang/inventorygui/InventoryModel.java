@@ -27,6 +27,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	private ResultSet resultSet;
 	private ResultSetMetaData metaData;
 	private int numberOfRows;
+	private String itemQuantity;
 	
 	private boolean connectedToDatabase = false;
 	
@@ -227,8 +228,8 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			resultSet.last();
 			numberOfRows = resultSet.getRow();
 			resultSet.first();
-			
-			//NOTE: Below codes enable media item editing via a dialog.  Most of them can be removed if editing is done via JTable model only.
+
+			//NOTE: Below codes enable media item editing via a dialog.  Most of them can be removed if media editing and(or) display are(is) done via JTable model only.
 			if (numberOfRows > 0){
 				do{
 					if (resultSet.getObject(1) != null)
@@ -254,9 +255,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 							searchResult.add(new Book(ID, title, description, genre, author, ISBN));
 						}
 					}
-					//Record match found.
-					return true;
 				}while (resultSet.next());
+				//Record match found.
+				return true;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -272,6 +273,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 			//Modify only if quantity is not empty and is a number (not consisting of alphabetic characters)
 			String sqlString;
+			quantity = quantity.trim();
 			if (!quantity.equals("") && Utility.isNumeric(quantity)){
 				sqlString = "UPDATE inventory SET Quantity = ? WHERE MediaID = ?";
 				try {
@@ -461,10 +463,10 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 
 	@Override
-	public String getItemQuantity(String itemID) {
+	public void checkItemQuantity(String itemID) {
 
 		String sqlString;
-		String quantity = "0";
+		
 		if (itemID != null){
 			itemID = itemID.trim();
 			if (!itemID.equals("") && Utility.isNumeric(itemID)){
@@ -478,19 +480,28 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 					resultSet.first();
 					if (numberOfRows > 0){
 						if (resultSet.getObject(2) != null){
-							quantity = resultSet.getObject(2).toString();
+							itemQuantity = resultSet.getObject(2).toString();
+							view.update(UpdateType.ITEM_QUANTITY);
 						}
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 			}
-			return quantity;
 		}
 		else{ 
 			System.out.println("getItemQuantity(String itemID) reference is null.");
-			return null;
 		}
+	}
+	
+	@Override
+	public String getItemQuantity() {
+		return itemQuantity;
+	}
+	
+	@Override
+	public int getNumberOfRows() {
+		return numberOfRows;
 	}
 	
 	@Override
