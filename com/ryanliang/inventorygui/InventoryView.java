@@ -29,6 +29,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
 @SuppressWarnings("serial")
@@ -271,9 +272,8 @@ public class InventoryView extends JFrame implements Viewable{
 				remove(scrollPane);
 			
 			Media item = itemDialog.getItem();
-			
 			controller.addItem(item, itemDialog.getQuantity());
-			//displayResult(item);
+			//Call searchItem() here causes new item to be displayed.
 			controller.searchItem(item.getID());
 		}
 		if (itemDialog != null){
@@ -380,7 +380,6 @@ public class InventoryView extends JFrame implements Viewable{
 			String artist = item.getArtist();
 			temp = new CD(ID, title, description , genre, artist);
 			controller.editItem(temp, quantity); 
-			//displayResult(temp);
 		}
 		else if (mm instanceof DVD){
 			DVD item = (DVD) mm;
@@ -388,7 +387,6 @@ public class InventoryView extends JFrame implements Viewable{
 			String cast = item.getCast();
 			temp = new DVD(ID, title, description , genre, cast);
 			controller.editItem(temp, quantity); 
-			//displayResult(temp);
 		}
 		else if (mm instanceof Book){
 			Book item = (Book) mm;
@@ -397,7 +395,6 @@ public class InventoryView extends JFrame implements Viewable{
 			String ISBN = item.getISBN();
 			temp = new Book(ID, title, description , genre, author, ISBN);
 			controller.editItem(temp, quantity); 
-			//displayResult(temp);
 		}
 		controller.searchItem(ID);
 
@@ -412,7 +409,11 @@ public class InventoryView extends JFrame implements Viewable{
 		if (scrollPane != null)
 			remove(scrollPane);
 		
+		DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+		leftRenderer.setHorizontalAlignment( SwingConstants.LEFT);
+		
 		table = new JTable((TableModel) model); 
+		table.setDefaultRenderer(Integer.class, leftRenderer);
         //table.getSelectionModel().addListSelectionListener(new RowListener());
         //table.getColumnModel().getSelectionModel().addListSelectionListener(new ColumnListener());
        // table.setAutoCreateRowSorter(true);

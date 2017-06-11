@@ -60,5 +60,4 @@ public class PropertiesTableModel extends AbstractTableModel
 	{ 
 		return data[row][column]; 
 	} 
-
 } 

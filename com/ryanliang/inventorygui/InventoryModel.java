@@ -287,14 +287,8 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		else 
 			System.out.println("editItem(Media media, String quantity) reference is null.");
 	}
-
-	@Override
-	public void saveData() {
-	//not used at this time
-	}
 	
-	@Override
-	public void loadData() {		
+	private void loadData() {		
 
 		String sqlString;
 		String counter;
@@ -366,7 +360,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 
 	@Override
-	public void deleteItem(String itemID) throws SQLException, IllegalStateException {
+	public void deleteItem(String itemID){
 		if (itemID != null){
 			itemID = itemID.trim();
 			if (!itemID.equals("") && Utility.isNumeric(itemID)){
@@ -402,15 +396,15 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 		//ID based search
 		while (true){
-			sqlString = "SELECT * FROM cd WHERE CDID = ?";
+			sqlString = "SELECT CDID, Title, Description, Genre, Artist, Quantity FROM cd INNER JOIN inventory ON cd.CDID=inventory.MediaID WHERE CDID = ?";
 			if (queryTable(MediaCategory.CD, sqlString, query))
 				break;
 		
-			sqlString = "SELECT * FROM dvd WHERE DVDID = ?";
+			sqlString = "SELECT DVDID, Title, Description, Genre, Cast, Quantity FROM dvd INNER JOIN inventory ON dvd.DVDID=inventory.MediaID WHERE DVDID = ?";
 			if (queryTable(MediaCategory.DVD, sqlString, query))
 				break;
 
-			sqlString = "SELECT * FROM book WHERE BookID = ?";
+			sqlString = "SELECT BookID, Title, Description, Genre, Author, ISBN, Quantity FROM book INNER JOIN inventory ON book.BookID=inventory.MediaID WHERE BookID = ?";
 			if (queryTable(MediaCategory.BOOK, sqlString, query))
 				break;
 
@@ -424,30 +418,30 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		//Word phrase based search
 		if (!query.equals("")){
 			if (media == MediaCategory.CD){
-				sqlString = "SELECT * FROM cd WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Artist LIKE ?";
+				sqlString = "SELECT CDID, Title, Description, Genre, Artist, Quantity FROM cd INNER JOIN inventory ON cd.CDID=inventory.MediaID WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Artist LIKE ?";
 				queryTable(MediaCategory.CD, sqlString, query, query, query, query);
 			}
 			else if (media == MediaCategory.DVD){
-				sqlString = "SELECT * FROM dvd WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Cast LIKE ?";
+				sqlString = "SELECT DVDID, Title, Description, Genre, Cast, Quantity FROM dvd INNER JOIN inventory ON dvd.DVDID=inventory.MediaID WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Cast LIKE ?";
 				queryTable(MediaCategory.DVD, sqlString, query, query, query, query);
 			}
 			else if (media == MediaCategory.BOOK){
-				sqlString = "SELECT * FROM book WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Author LIKE ? OR ISBN LIKE ?";
+				sqlString = "SELECT BookID, Title, Description, Genre, Author, ISBN, Quantity FROM book INNER JOIN inventory ON book.BookID=inventory.MediaID WHERE Title LIKE ? OR Description LIKE ? OR Genre LIKE ? OR Author LIKE ? OR ISBN LIKE ?";
 				queryTable(MediaCategory.BOOK, sqlString, query, query, query, query, query);
 			}
 		}
 		//simply return all CDs, DVDs or Books
 		else{
 			if (media == MediaCategory.CD){
-				sqlString = "SELECT * FROM cd";
+				sqlString = "SELECT CDID, Title, Description, Genre, Artist, Quantity FROM cd INNER JOIN inventory ON cd.CDID=inventory.MediaID";
 				queryTable(MediaCategory.CD, sqlString, query);
 			}
 			else if (media == MediaCategory.DVD){
-				sqlString = "SELECT * FROM dvd";
+				sqlString = "SELECT DVDID, Title, Description, Genre, Cast, Quantity FROM dvd INNER JOIN inventory ON dvd.DVDID=inventory.MediaID";
 				queryTable(MediaCategory.DVD, sqlString, query);
 			}
 			else if (media == MediaCategory.BOOK){
-				sqlString = "SELECT * FROM book";
+				sqlString = "SELECT BookID, Title, Description, Genre, Author, ISBN, Quantity FROM book INNER JOIN inventory ON book.BookID=inventory.MediaID";
 				queryTable(MediaCategory.BOOK, sqlString, query);
 			}
 		}

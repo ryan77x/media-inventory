@@ -13,12 +13,9 @@ public interface Modellable {
 	
 	public void addItem(Media media, String quantity);
 
-	public void saveData();
-	public void loadData();
-
 	public void editItem(Media media, String quantity);
 	
-	public void deleteItem(String itemID) throws SQLException, IllegalStateException;
+	public void deleteItem(String itemID);
 	
 	public void searchItem(String query);
 	public void searchItem(String query, MediaCategory media); 

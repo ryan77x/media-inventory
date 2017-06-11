@@ -20,11 +20,7 @@ public class InventoryController implements Controllable {
 			model.addItem(media, quantity);
 			
 		}
-		@Override
-		public void saveData() {
-			model.saveData();
-			
-		}
+
 		@Override
 		public void searchItem(String query) {
 			model.searchItem(query);
@@ -40,13 +36,9 @@ public class InventoryController implements Controllable {
 		public void searchItemForEditing(String itemID){
 			model.searchItemForEditing(itemID);
 		}
+
 		@Override
-		public void loadData() {
-			model.loadData();
-			
-		}
-		@Override
-		public void deleteItem(String itemID) throws SQLException, IllegalStateException{
+		public void deleteItem(String itemID){
 			model.deleteItem(itemID);
 			
 		}
