@@ -40,8 +40,13 @@ public class InventoryController implements Controllable {
 		@Override
 		public void deleteItem(String itemID){
 			model.deleteItem(itemID);
-			
 		}
+		
+		@Override
+		public void deleteItem(MediaCategory media){
+			model.deleteItem(media);
+		}
+		
 		@Override
 		public void editItem(Media media, String quantity) {
 			model.editItem(media, quantity);

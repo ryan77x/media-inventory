@@ -53,6 +53,9 @@ public class InventoryView extends JFrame implements Viewable{
 	private final JMenuItem newEditMenu = new JMenuItem("New");
 	private final JMenuItem editEditMenu = new JMenuItem("Edit"); 
 	private final JMenuItem deleteEditMenu = new JMenuItem("Delete");
+	private final JMenuItem deleteAllCDsEditMenu = new JMenuItem("Delete all CDs");
+	private final JMenuItem deleteAllDVDsEditMenu = new JMenuItem("Delete all DVDs");
+	private final JMenuItem deleteAllBooksEditMenu = new JMenuItem("Delete all Books");
 	private final JMenuItem searchEditMenu = new JMenuItem("Search"); 
 	
 	private final JMenuItem aboutHelpMenu = new JMenuItem("About");
@@ -99,6 +102,10 @@ public class InventoryView extends JFrame implements Viewable{
 		newEditMenu.addActionListener(event -> newItem());
 		searchEditMenu.addActionListener(event -> searchItem());
 		deleteEditMenu.addActionListener(event -> deleteItem());
+		
+		deleteAllCDsEditMenu.addActionListener(event -> deleteMultipleItems(MediaCategory.CD));
+		deleteAllDVDsEditMenu.addActionListener(event -> deleteMultipleItems(MediaCategory.DVD));
+		deleteAllBooksEditMenu.addActionListener(event -> deleteMultipleItems(MediaCategory.BOOK));
 		editEditMenu.addActionListener(event -> editItem());
 		
 		newToolBarButton.addActionListener(event -> newItem());
@@ -106,9 +113,9 @@ public class InventoryView extends JFrame implements Viewable{
 		deleteToolBarButton.addActionListener(event -> deleteItem());
 		editToolBarButton.addActionListener(event -> editItem());
 		
-		CDsToolBarButton.addActionListener(event -> getAllCDs());
-		DVDsToolBarButton.addActionListener(event -> getAllDVDs());
-		BooksToolBarButton.addActionListener(event -> getAllBooks());
+		CDsToolBarButton.addActionListener(event -> controller.searchItem("", MediaCategory.CD));
+		DVDsToolBarButton.addActionListener(event -> controller.searchItem("", MediaCategory.DVD));
+		BooksToolBarButton.addActionListener(event -> controller.searchItem("", MediaCategory.BOOK));
       
 		addWindowListener(new WindowAdapter() {
 		    public void windowClosing(WindowEvent e) {
@@ -124,6 +131,9 @@ public class InventoryView extends JFrame implements Viewable{
 		editMenu.add(newEditMenu);
 		editMenu.add(editEditMenu);
 		editMenu.add(deleteEditMenu);
+		editMenu.add(deleteAllCDsEditMenu);
+		editMenu.add(deleteAllDVDsEditMenu);
+		editMenu.add(deleteAllBooksEditMenu);
 		editMenu.add(searchEditMenu);
 		
 		helpMenu.add(aboutHelpMenu);
@@ -160,16 +170,12 @@ public class InventoryView extends JFrame implements Viewable{
     	}
     }
 
-	private void getAllCDs() {
-		controller.searchItem("", MediaCategory.CD);
-	}
-	
-	private void getAllDVDs() {
-		controller.searchItem("", MediaCategory.DVD);
-	}
-	
-	private void getAllBooks() {
-		controller.searchItem("", MediaCategory.BOOK);
+	private void deleteMultipleItems(MediaCategory media) {
+		int answer = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete all " + media + "?");
+		if (answer == JOptionPane.YES_OPTION){	
+			controller.deleteItem(media);
+			removeTable();
+		}
 	}
 	
 	private void searchItem() {	
@@ -200,8 +206,11 @@ public class InventoryView extends JFrame implements Viewable{
 	}
 
 	private void removeTable() {
-		if (scrollPane != null)
+		if (scrollPane != null){
 			remove(scrollPane);
+			validate();	
+			repaint();	
+		}
 	}
 
 	private void editItem() {
@@ -302,9 +311,10 @@ public class InventoryView extends JFrame implements Viewable{
 	public void update(UpdateType ut) {
 		if (ut == UpdateType.SEARCH_RESULT){
 			searchResult = model.getSearchResult();
-			
-			if (searchResult.length < 1){
+			System.out.println(searchResult.length);
+			if (model.getNumberOfRows() < 1){
 				setSearchResultStatusVisible(false);
+				removeTable();
 				JOptionPane.showMessageDialog(null, "Item does not exist", "alert", JOptionPane.ERROR_MESSAGE); 
 			}
 			else {
@@ -315,7 +325,7 @@ public class InventoryView extends JFrame implements Viewable{
 		else if (ut == UpdateType.EDIT){
 			Media [] result = model.getSearchResult();
 			
-			if (result.length < 1)
+			if (model.getNumberOfRows() < 1)
 				JOptionPane.showMessageDialog(null, "Item does not exist", "alert", JOptionPane.ERROR_MESSAGE); 
 			else
 				editResult(result[0]);			

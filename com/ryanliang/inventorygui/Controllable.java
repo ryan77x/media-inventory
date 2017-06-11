@@ -5,8 +5,6 @@
 
 package com.ryanliang.inventorygui;
 
-import java.sql.SQLException;
-
 public interface Controllable {
 
 	public void searchItem(String query);
@@ -18,6 +16,7 @@ public interface Controllable {
 	public void editItem(Media media, String quantity);
 	
 	public void deleteItem(String itemID);
+	public void deleteItem(MediaCategory media);
 	
 	public void generateID(); 
 	

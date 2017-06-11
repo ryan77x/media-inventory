@@ -382,6 +382,31 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		else 
 			System.out.println("deleteItem(String itemID) reference is null.");			
 	}
+	
+	@Override
+	public void deleteItem(MediaCategory media){
+		//Must obtain resultSet first by executing searchItemHelper() before calling deleteMultipleItems()
+		searchItemHelper("", media);
+		deleteMultipleItems();
+	}
+	
+	private void deleteMultipleItems() {
+		try{
+			metaData = resultSet.getMetaData();
+			resultSet.last();
+			numberOfRows = resultSet.getRow();
+			resultSet.first();
+
+			if (numberOfRows > 0){
+				do{
+					if (resultSet.getObject(1) != null)
+						deleteItem(resultSet.getObject(1).toString());
+				}while (resultSet.next());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	public void generateID() {

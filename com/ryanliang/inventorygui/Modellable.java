@@ -16,6 +16,7 @@ public interface Modellable {
 	public void editItem(Media media, String quantity);
 	
 	public void deleteItem(String itemID);
+	public void deleteItem(MediaCategory media);
 	
 	public void searchItem(String query);
 	public void searchItem(String query, MediaCategory media); 
