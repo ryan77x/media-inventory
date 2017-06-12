@@ -36,12 +36,10 @@ public class InventoryView extends JFrame implements Viewable{
 	private final Controllable controller;
 	private Modellable model;
 	
-	private Media [] searchResult;
 	private static String itemID = "0";
 	private String itemQuantity = "0";
 	
-	private ItemDialog itemDialog = null;
-	private SearchDialog searchDialog = null;
+	private CustomDialog subDialog = null;
 	
 	private final JMenuBar menuBar = new JMenuBar();
 	private final JMenu fileMenu = new JMenu("File");
@@ -179,20 +177,12 @@ public class InventoryView extends JFrame implements Viewable{
 	}
 	
 	private void searchItem() {	
-		if (searchDialog == null)
-			searchDialog = new SearchDialog(this);
-		
-		searchDialog.resetRadioButtonGroup();
-		
-		searchDialog.setLocationRelativeTo(this);
-		searchDialog.setDone(false);
-		searchDialog.setVisible(true);
-		
-		if (searchDialog.getDone() == true){
+		openCustomDialog(null, "", DialogMode.SEARCH_ITEMS);
+		if (subDialog.getDone() == true){
 			removeTable();
 			
-			MediaCategory media = searchDialog.getMedia();
-			String search = searchDialog.getSearch();
+			MediaCategory media = subDialog.getMedia();
+			String search = subDialog.getSearch();
 			
 			if (search != null){				
 				search = search.trim();
@@ -203,11 +193,15 @@ public class InventoryView extends JFrame implements Viewable{
 					controller.searchItem(search, media);
 			}
 		}
+		if (subDialog != null){
+			subDialog.initUI();
+		}
 	}
 
 	private void removeTable() {
 		if (scrollPane != null){
 			remove(scrollPane);
+			tableRowSelected = false;
 			validate();	
 			repaint();	
 		}
@@ -255,39 +249,41 @@ public class InventoryView extends JFrame implements Viewable{
 
 	private void newItem() {
 		setSearchResultStatusVisible(false);
-		Media temp = null;
 		
-		//Generate item ID which will be needed in the openItemDialog()
+		//Generate item ID which will be needed in the openCustomDialog()
 		controller.generateID();
 
-		openItemDialog(temp, "");
-		if (itemDialog.getDone() == true){
+		openCustomDialog(null, "", DialogMode.NEW_ITEM);
+		if (subDialog.getDone() == true){
 			removeTable();
 			
-			Media item = itemDialog.getItem();
-			controller.addItem(item, itemDialog.getQuantity());
+			Media item = subDialog.getItem();
+			controller.addItem(item, subDialog.getQuantity());
 			//Call searchItem() here causes new item to be displayed.
 			controller.searchItem(item.getID());
 		}
-		if (itemDialog != null){
-			itemDialog.initUI();
+		if (subDialog != null){
+			subDialog.initUI();
 		}
 	}
 	
-	private void openItemDialog(Media m, String quantity) {
-		if (itemDialog == null)
-			itemDialog = new ItemDialog(this);
+	private void openCustomDialog(Media m, String quantity, DialogMode mode) {
+		if (subDialog == null)
+			subDialog = new CustomDialog(this);
 		
-		if (m == null){
-			itemDialog.resetRadioButtonGroup();
-			itemDialog.inputItemDetails(itemID);
+		subDialog.resetRadioButtonGroup();
+		if (mode == DialogMode.NEW_ITEM){
+			subDialog.showDialog(itemID);
 		}
-		else{
-			itemDialog.initializeTextFields(m, quantity);
+		else if (mode == DialogMode.EDIT_ITEM){
+			subDialog.showDialog(m, quantity);
 		}
-		itemDialog.setLocationRelativeTo(this);
-		itemDialog.setDone(false);
-		itemDialog.setVisible(true);
+		else if (mode == DialogMode.SEARCH_ITEMS){
+			subDialog.showDialog();
+		}
+		subDialog.setLocationRelativeTo(this);
+		subDialog.setDone(false);
+		subDialog.setVisible(true);
 	}
 
 	@Override
@@ -310,8 +306,6 @@ public class InventoryView extends JFrame implements Viewable{
 	@Override
 	public void update(UpdateType ut) {
 		if (ut == UpdateType.SEARCH_RESULT){
-			searchResult = model.getSearchResult();
-			System.out.println(searchResult.length);
 			if (model.getNumberOfRows() < 1){
 				setSearchResultStatusVisible(false);
 				removeTable();
@@ -346,14 +340,14 @@ public class InventoryView extends JFrame implements Viewable{
 
 	private void editResult(Media mm) {
 		model.checkItemQuantity(mm.getID());
-		openItemDialog(mm, itemQuantity);	
+		openCustomDialog(mm, itemQuantity, DialogMode.EDIT_ITEM);	
 		
-		if (itemDialog.getDone() == true){	
-			editResultHelper(itemDialog.getItem());
+		if (subDialog.getDone() == true){	
+			editResultHelper(subDialog.getItem());
 		}
 	
-		if (itemDialog != null){
-			itemDialog.initUI();
+		if (subDialog != null){
+			subDialog.initUI();
 		}
 	}
 
@@ -361,7 +355,7 @@ public class InventoryView extends JFrame implements Viewable{
 		Media temp;
 		String ID = mm.getID();
 		String title = mm.getTitle();
-		String quantity = itemDialog.getQuantity();
+		String quantity = subDialog.getQuantity();
 		String genre = mm.getGenre();
 		String description = mm.getDescription();
 		

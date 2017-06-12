@@ -26,17 +26,20 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
-public class ItemDialog extends JDialog implements ActionListener{
+public class CustomDialog extends JDialog implements ActionListener{
 
 	private Media item = null;
 	private boolean done = false;
+	private DialogMode dialogMode = null;
 	private String itemID = null;
 	private String quantity = "1";
 	private MediaCategory media = null;
+	private String search = "";
 		
 	private final JPanel CDMainPanel = new JPanel(new BorderLayout());
 	private final JPanel DVDMainPanel = new JPanel(new BorderLayout());
 	private final JPanel bookMainPanel = new JPanel(new BorderLayout());
+	private final JPanel searchPanel = new JPanel(new BorderLayout());
 	
 	private final JPanel radioButtonPanel = new JPanel();
 	private final JPanel CDTextFieldPanel = new JPanel();
@@ -78,9 +81,12 @@ public class ItemDialog extends JDialog implements ActionListener{
 	private final JTextField bookQuantityField = new JTextField(20);
 	
 	private JLabel errorLabel = new JLabel("", SwingConstants.CENTER);
-	private final JButton doneButton = new JButton("Done"); 
+	private JLabel searchMessageLabel = new JLabel("Enter item ID number or (check media type above and a search phrase)", SwingConstants.CENTER);
+	private final JTextField searchField = new JTextField(20);
+	private String buttonName = "Done";
+	private final JButton confirmationButton = new JButton(buttonName); 
 
-	public ItemDialog(JFrame frame){
+	public CustomDialog(JFrame frame){
 		super(frame, "Item dialog", true);
 		
 		Dimension frameSize = frame.getSize();
@@ -94,40 +100,46 @@ public class ItemDialog extends JDialog implements ActionListener{
 
 	private void addListeners() {	
 		CDRadioButton.addActionListener(event -> {
-			addJPanel(CDMainPanel);
+			if (dialogMode == DialogMode.NEW_ITEM){
+				addJPanel(CDMainPanel);
+
+				CDTitleField.setText("");
+				CDGenreField.setText("");
+				CDArtistField.setText("");
+				CDDescriptionField.setText("");
+				CDQuantityField.setText("");
+			}
 			media = MediaCategory.CD;
-			
-			CDTitleField.setText("");
-			CDGenreField.setText("");
-			CDArtistField.setText("");
-			CDDescriptionField.setText("");
-			CDQuantityField.setText("");
 		});
 		
 		DVDRadioButton.addActionListener(event -> {
-			addJPanel(DVDMainPanel);
+			if (dialogMode == DialogMode.NEW_ITEM){
+				addJPanel(DVDMainPanel);
+
+				DVDTitleField.setText("");
+				DVDGenreField.setText("");
+				DVDCastField.setText("");
+				DVDDescriptionField.setText("");
+				DVDQuantityField.setText("");
+			}
 			media = MediaCategory.DVD;
-			
-			DVDTitleField.setText("");
-			DVDGenreField.setText("");
-			DVDCastField.setText("");
-			DVDDescriptionField.setText("");
-			DVDQuantityField.setText("");
 		});
-		
+
 		bookRadioButton.addActionListener(event -> {
-			addJPanel(bookMainPanel);
+			if (dialogMode == DialogMode.NEW_ITEM){
+				addJPanel(bookMainPanel);
+
+				bookTitleField.setText("");
+				bookGenreField.setText("");
+				bookAuthorField.setText("");
+				bookISBNField.setText("");
+				bookDescriptionField.setText("");
+				bookQuantityField.setText("");
+			}
 			media = MediaCategory.BOOK;
-			
-			bookTitleField.setText("");
-			bookGenreField.setText("");
-			bookAuthorField.setText("");
-			bookISBNField.setText("");
-			bookDescriptionField.setText("");
-			bookQuantityField.setText("");
 		});
 		
-		doneButton.addActionListener(this);
+		confirmationButton.addActionListener(this);
 	}
 
 	private void organizeUI() {
@@ -144,7 +156,7 @@ public class ItemDialog extends JDialog implements ActionListener{
 		buttonPanel.setLayout(new FlowLayout());
 		southPanel.setLayout(new BorderLayout());
 
-		buttonPanel.add(doneButton);
+		buttonPanel.add(confirmationButton);
 		southPanel.add(errorLabel, BorderLayout.CENTER);
 		southPanel.add(buttonPanel, BorderLayout.SOUTH);
 		
@@ -204,6 +216,9 @@ public class ItemDialog extends JDialog implements ActionListener{
 		bookLabelPanel.add(new JLabel("Genre:"));
 		bookLabelPanel.add(new JLabel("Quantity:"));
 		bookLabelPanel.add(new JLabel("Description:"));
+		
+		searchPanel.add(searchMessageLabel, BorderLayout.NORTH);
+		searchPanel.add(searchField, BorderLayout.CENTER);
 	}
 
 	private void addJPanel(JPanel panel) {
@@ -217,65 +232,72 @@ public class ItemDialog extends JDialog implements ActionListener{
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		String title = "";
-		String genre = "";
-		String description = "";
-		
-		errorLabel.setForeground(Color.RED);
-
-		if (media ==  MediaCategory.CD){
-			title = CDTitleField.getText().trim();
-			genre = CDGenreField.getText().trim();
-			description = CDDescriptionField.getText().trim();
-			String artist = CDArtistField.getText().trim();
-			quantity = CDQuantityField.getText().trim().toLowerCase();
-
-			if (!Utility.isNumeric(quantity))
-				quantity = "1";
-			
-			if (title.length() < 1)
-				errorLabel.setText("Title may be invalid.");
-			else{
-				item = new CD(itemID, title, description, genre, artist);
-				
-				resetSettings();
-			}
+		if (dialogMode == DialogMode.SEARCH_ITEMS){
+			search = searchField.getText().trim();	
+			resetSettings();
 		}
-		else if (media ==  MediaCategory.DVD){
-			title = DVDTitleField.getText().trim();
-			genre = DVDGenreField.getText().trim();
-			description = DVDDescriptionField.getText();
-			String cast = DVDCastField.getText().trim();
-			quantity = DVDQuantityField.getText().trim().toLowerCase();
+		else
+		{
+			String title = "";
+			String genre = "";
+			String description = "";
 
-			if (!Utility.isNumeric(quantity))
-				quantity = "1";
-			
-			if (title.length() < 1)
-				errorLabel.setText("Title may be invalid.");
-			else{
-				item = new DVD(itemID, title, description, genre, cast);
-				
-				resetSettings();
+			errorLabel.setForeground(Color.RED);
+
+			if (media ==  MediaCategory.CD){
+				title = CDTitleField.getText().trim();
+				genre = CDGenreField.getText().trim();
+				description = CDDescriptionField.getText().trim();
+				String artist = CDArtistField.getText().trim();
+				quantity = CDQuantityField.getText().trim().toLowerCase();
+
+				if (!Utility.isNumeric(quantity))
+					quantity = "1";
+
+				if (title.length() < 1)
+					errorLabel.setText("Title may be invalid.");
+				else{
+					item = new CD(itemID, title, description, genre, artist);
+
+					resetSettings();
+				}
 			}
-		}
-		else if (media ==  MediaCategory.BOOK){
-			title = bookTitleField.getText().trim();
-			genre = bookGenreField.getText().trim();
-			description = bookDescriptionField.getText().trim();
-			String author = bookAuthorField.getText().trim();
-			String ISBN = bookISBNField.getText().trim();
-			quantity = bookQuantityField.getText().trim().toLowerCase();
+			else if (media ==  MediaCategory.DVD){
+				title = DVDTitleField.getText().trim();
+				genre = DVDGenreField.getText().trim();
+				description = DVDDescriptionField.getText();
+				String cast = DVDCastField.getText().trim();
+				quantity = DVDQuantityField.getText().trim().toLowerCase();
 
-			if (!Utility.isNumeric(quantity))
-				quantity = "1";
-			
-			if (title.length() < 1)
-				errorLabel.setText("Title may be invalid.");
-			else{
-				item = new Book(itemID, title, description, genre, author, ISBN);
-				
-				resetSettings();
+				if (!Utility.isNumeric(quantity))
+					quantity = "1";
+
+				if (title.length() < 1)
+					errorLabel.setText("Title may be invalid.");
+				else{
+					item = new DVD(itemID, title, description, genre, cast);
+
+					resetSettings();
+				}
+			}
+			else if (media ==  MediaCategory.BOOK){
+				title = bookTitleField.getText().trim();
+				genre = bookGenreField.getText().trim();
+				description = bookDescriptionField.getText().trim();
+				String author = bookAuthorField.getText().trim();
+				String ISBN = bookISBNField.getText().trim();
+				quantity = bookQuantityField.getText().trim().toLowerCase();
+
+				if (!Utility.isNumeric(quantity))
+					quantity = "1";
+
+				if (title.length() < 1)
+					errorLabel.setText("Title may be invalid.");
+				else{
+					item = new Book(itemID, title, description, genre, author, ISBN);
+
+					resetSettings();
+				}
 			}
 		}
 	}
@@ -300,12 +322,20 @@ public class ItemDialog extends JDialog implements ActionListener{
 	public boolean getDone() {
 		return done;
 	}
+	
+	public String getSearch() {
+		return search;
+	}
 
-	public void initializeTextFields(Media m, String quant) {
+	public MediaCategory getMedia() {
+		return media;
+	}
+	public void showDialog(Media m, String quant) {
+		dialogMode = DialogMode.EDIT_ITEM;
 		itemID = m.getID();
 		
 		if (m instanceof CD){   
-			add(CDMainPanel);
+			add(CDMainPanel, BorderLayout.CENTER);
 			media = MediaCategory.CD;
 			
 			CDTitleField.setText(m.getTitle());
@@ -315,7 +345,7 @@ public class ItemDialog extends JDialog implements ActionListener{
 			CDQuantityField.setText(quant);
 		}
 		else if (m instanceof DVD){   
-			add(DVDMainPanel);
+			add(DVDMainPanel, BorderLayout.CENTER);
 			media = MediaCategory.DVD;
 			
 			DVDTitleField.setText(m.getTitle());
@@ -325,7 +355,7 @@ public class ItemDialog extends JDialog implements ActionListener{
 			DVDQuantityField.setText(quant);
 		}
 		else if (m instanceof Book){   
-			add(bookMainPanel);
+			add(bookMainPanel, BorderLayout.CENTER);
 			media = MediaCategory.BOOK;
 			
 			bookTitleField.setText(m.getTitle());
@@ -335,13 +365,35 @@ public class ItemDialog extends JDialog implements ActionListener{
 			bookDescriptionField.setText(m.getDescription());
 			bookQuantityField.setText(quant);
 		}
+		buttonName = "Done";
+		confirmationButton.setText(buttonName);
+		
 		add(southPanel, BorderLayout.SOUTH);
 	}
 
-	public void inputItemDetails(String itemID) {
+	public void showDialog(String itemID) {
+		dialogMode = DialogMode.NEW_ITEM;
 		this.itemID = itemID;
 
-		add(radioButtonPanel, BorderLayout.NORTH);		
+		add(radioButtonPanel, BorderLayout.NORTH);	
+		buttonName = "Done";
+		confirmationButton.setText(buttonName);
+	}
+	
+	public void showDialog() {
+		dialogMode = DialogMode.SEARCH_ITEMS;
+		
+		add(radioButtonPanel, BorderLayout.NORTH);	
+		add(searchPanel, BorderLayout.CENTER);	
+		add(southPanel, BorderLayout.SOUTH);
+		
+		media = MediaCategory.CD;
+		buttonName = "Search";
+		searchField.setText("");
+		confirmationButton.setText(buttonName);
+		
+		validate();
+		repaint();	
 	}
 
 	private void removePanels() {
@@ -358,6 +410,7 @@ public class ItemDialog extends JDialog implements ActionListener{
 	public void initUI() {
 		errorLabel.setText("");
 		remove(radioButtonPanel);
+		remove(searchPanel);
 		removePanels();
 	}
 }
