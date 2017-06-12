@@ -28,6 +28,8 @@ import javax.swing.SwingConstants;
 @SuppressWarnings("serial")
 public class CustomDialog extends JDialog implements ActionListener{
 
+	private int frameWidth;
+	private int frameHeight;
 	private Media item = null;
 	private boolean done = false;
 	private DialogMode dialogMode = null;
@@ -87,11 +89,11 @@ public class CustomDialog extends JDialog implements ActionListener{
 	private final JButton confirmationButton = new JButton(buttonName); 
 
 	public CustomDialog(JFrame frame){
-		super(frame, "Item dialog", true);
+		super(frame, "Dialog", true);
 		
 		Dimension frameSize = frame.getSize();
-		int frameWidth = frameSize.width;
-		int frameHeight = frameSize.height;
+		frameWidth = frameSize.width;
+		frameHeight = frameSize.height;
 		setSize(frameWidth/3,frameHeight/3);
 		
 		organizeUI();
@@ -331,6 +333,7 @@ public class CustomDialog extends JDialog implements ActionListener{
 		return media;
 	}
 	public void showDialog(Media m, String quant) {
+		setSize(frameWidth/3,frameHeight/3);
 		dialogMode = DialogMode.EDIT_ITEM;
 		itemID = m.getID();
 		
@@ -372,6 +375,7 @@ public class CustomDialog extends JDialog implements ActionListener{
 	}
 
 	public void showDialog(String itemID) {
+		setSize(frameWidth/3,frameHeight/3);
 		dialogMode = DialogMode.NEW_ITEM;
 		this.itemID = itemID;
 
@@ -381,6 +385,7 @@ public class CustomDialog extends JDialog implements ActionListener{
 	}
 	
 	public void showDialog() {
+		setSize(frameWidth/3,frameHeight/6);
 		dialogMode = DialogMode.SEARCH_ITEMS;
 		
 		add(radioButtonPanel, BorderLayout.NORTH);	

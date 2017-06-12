@@ -215,7 +215,8 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		String title = "";
 		String description = "";
 		String genre = "";
-
+		
+		connectedToDatabase = true;
 		try {
 			queryStatement = connection.prepareStatement(sqlString);
 			
@@ -224,8 +225,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 					queryStatement.setString(ii, "%" + parameters[ii-1] + "%");
 				}
 			}
-			else if (size == 1 && !parameters[0].equals(""))	
+			else if (size == 1 && !parameters[0].equals("")){	
 				queryStatement.setInt(1, Integer.valueOf(parameters[0]));
+			}
 			
 			resultSet = queryStatement.executeQuery();
 			metaData = resultSet.getMetaData();
@@ -350,7 +352,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 	
 	@Override
-	public void searchItem(String query, MediaCategory media) {
+	public void searchItem(String query, MediaCategory media){
 		if (query != null){
 			query = query.trim();
 

@@ -189,8 +189,9 @@ public class InventoryView extends JFrame implements Viewable{
 				if (!search.equals("") && Utility.isNumeric(search)){
 					controller.searchItem(search);
 				}
-				else
+				else{
 					controller.searchItem(search, media);
+				}
 			}
 		}
 		if (subDialog != null){
