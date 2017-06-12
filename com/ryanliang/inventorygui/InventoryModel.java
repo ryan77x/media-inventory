@@ -17,29 +17,28 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 	private Viewable view;
 	private final ArrayList<Media> searchResult = new ArrayList<>();
-
+	
+	private String DBServerURL;
+	private String userName;
+	private String passWord;
+	
 	private static int IDCounter = 0;
 	
-	private final Connection connection;
-	private PreparedStatement nonQueryStatement;
-	private PreparedStatement queryStatement;
+	private Connection connection = null;
+	private PreparedStatement nonQueryStatement = null;
+	private PreparedStatement queryStatement = null;
 	private ResultSet resultSet;
 	private ResultSetMetaData metaData;
 	private int numberOfRows;
 	private String itemQuantity;
 	
 	private boolean connectedToDatabase = false;
+	private boolean LoadedData = false;
 	
-	public InventoryModel(String url, String username, String password) throws SQLException {
-		connection = DriverManager.getConnection(url, username, password);
-		nonQueryStatement = null;
-		queryStatement = null;
-		//statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+	public InventoryModel() {
 
-		connectedToDatabase = true;
-		loadData();
 	}
-	
+
 	@Override
 	public void disconnectFromDatabase(){
 		if (connectedToDatabase){
@@ -63,6 +62,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 	@Override
 	public void addItem(Media media, String quantity) {
+		//Ensure to obtain a new connection if existing database connection is no longer valid.
+		getDBConnection(DBServerURL, userName, passWord);
+		
 		if (media != null && quantity != null){
 			String ID = media.getID();
 			String sqlString = null;
@@ -274,6 +276,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 	@Override
 	public void editItem(Media media, String quantity) {
+		//Ensure to obtain a new connection if existing database connection is no longer valid.
+		getDBConnection(DBServerURL, userName, passWord);
+		
 		if (media != null && quantity != null){
 			String ID = media.getID();
 			setData(media, SQLCommand.UPDATE);
@@ -339,6 +344,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	
 	@Override
 	public void searchItem(String query) {
+		//Ensure to obtain a new connection if existing database connection is no longer valid.
+		getDBConnection(DBServerURL, userName, passWord);
+		
 		if (query != null){
 			query = query.trim();
 			
@@ -353,6 +361,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	
 	@Override
 	public void searchItem(String query, MediaCategory media){
+		//Ensure to obtain a new connection if existing database connection is no longer valid.
+		getDBConnection(DBServerURL, userName, passWord);
+		
 		if (query != null){
 			query = query.trim();
 
@@ -378,6 +389,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	
 	@Override
 	public void deleteItem(String itemID){
+		//Ensure to obtain a new connection if existing database connection is no longer valid.
+		getDBConnection(DBServerURL, userName, passWord);
+		
 		if (itemID != null){
 			itemID = itemID.trim();
 			if (!itemID.equals("") && Utility.isNumeric(itemID)){
@@ -400,6 +414,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	
 	@Override
 	public void deleteItem(MediaCategory media){
+		//Ensure to obtain a new connection if existing database connection is no longer valid.
+		getDBConnection(DBServerURL, userName, passWord);
+		
 		//Must obtain resultSet first by executing searchItemHelper() before calling deleteMultipleItems()
 		searchItemHelper("", media);
 		deleteMultipleItems();
@@ -456,6 +473,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 	
 	private void searchItemHelper(String query, MediaCategory media) {
+		
 		String sqlString = null;
 
 		//Word phrase based search
@@ -491,7 +509,10 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 
 	@Override
-	public void searchItemForEditing(String itemID) {		
+	public void searchItemForEditing(String itemID) {	
+		//Ensure to obtain a new connection if existing database connection is no longer valid.
+		getDBConnection(DBServerURL, userName, passWord);
+		
 		if (itemID != null){
 			itemID = itemID.trim();
 			if (!itemID.equals("") && Utility.isNumeric(itemID)){
@@ -505,6 +526,9 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 
 	@Override
 	public void checkItemQuantity(String itemID) {
+		//Ensure to obtain a new connection if existing database connection is no longer valid.
+		getDBConnection(DBServerURL, userName, passWord);
+		
 
 		String sqlString;
 		
@@ -610,6 +634,28 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	private void checkDatabaseConnection() {
 		if (!connectedToDatabase)
 			throw new IllegalStateException("Not Connected to Database");
+	}
+
+	@Override
+	public void getDBConnection(String DBServerURL, String userName, String passWord) {
+		this.DBServerURL = DBServerURL;
+		this.userName = userName;
+		this.passWord = passWord;
+		
+		try {
+			if (!connectedToDatabase){
+				connection = DriverManager.getConnection(DBServerURL, userName, passWord);
+				connectedToDatabase = true;
+
+				if (!LoadedData){
+					loadData();
+					LoadedData = true;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }
 

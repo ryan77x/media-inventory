@@ -66,4 +66,8 @@ public class InventoryController implements Controllable {
 		public void checkItemQuantity(String itemID){
 			model.checkItemQuantity(itemID);
 		}
+		@Override
+		public void getDBConnection(String DBServerURL, String userName, String passWord) {
+			model.getDBConnection(DBServerURL, userName, passWord);
+		}
 }

@@ -22,5 +22,6 @@ public interface Controllable {
 	
 	public void disconnectFromDatabase();
 
-	public void checkItemQuantity(String itemID); 
+	public void checkItemQuantity(String itemID);
+	public void getDBConnection(String DBServerURL, String userName, String passWord); 
 }

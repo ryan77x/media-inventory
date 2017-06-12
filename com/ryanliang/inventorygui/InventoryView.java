@@ -19,8 +19,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
@@ -41,6 +43,13 @@ public class InventoryView extends JFrame implements Viewable{
 	
 	private CustomDialog subDialog = null;
 	
+	private JTextField DBServerURLField = new JTextField("jdbc:mysql://localhost:3306/media");
+	private JTextField userNameField = new JTextField();
+	private JTextField passWordField = new JPasswordField();
+	private String DBServerURL;
+	private String userName;
+	private String passWord;
+	   
 	private final JMenuBar menuBar = new JMenuBar();
 	private final JMenu fileMenu = new JMenu("File");
 	private final JMenu editMenu = new JMenu("Edit");
@@ -83,8 +92,26 @@ public class InventoryView extends JFrame implements Viewable{
 				
 		organizeUI();
 		addListeners();
+		getLoginCredential();
 			
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+	}
+
+	private void getLoginCredential() {
+		   Object[] message = {
+			   "Databse Server URL:", DBServerURLField,
+		       "User Name:", userNameField,
+		       "Password:", passWordField
+		   };
+
+		   int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+		   if (option == JOptionPane.OK_OPTION) {
+			   DBServerURL = DBServerURLField.getText().trim();
+			   userName = userNameField.getText().trim();
+			   passWord = passWordField.getText().trim();
+			   
+			   controller.getDBConnection(DBServerURL, userName, passWord);
+		   }
 	}
 
 	private void addListeners() {
@@ -114,7 +141,7 @@ public class InventoryView extends JFrame implements Viewable{
 		CDsToolBarButton.addActionListener(event -> controller.searchItem("", MediaCategory.CD));
 		DVDsToolBarButton.addActionListener(event -> controller.searchItem("", MediaCategory.DVD));
 		BooksToolBarButton.addActionListener(event -> controller.searchItem("", MediaCategory.BOOK));
-      
+
 		addWindowListener(new WindowAdapter() {
 		    public void windowClosing(WindowEvent e) {
 		    	quitApp();	

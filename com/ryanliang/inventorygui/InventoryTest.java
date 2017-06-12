@@ -9,15 +9,11 @@ import java.awt.EventQueue;
 import java.sql.SQLException;
 
 public class InventoryTest {
-	final static String Database_URL = "jdbc:mysql://localhost:3306/media";
-	final static String userName = "root";
-	final static String password = "asasas";
 	
 	public static void main(String[] args) {
 		
 		EventQueue.invokeLater(() -> {
-			try{
-				InventoryModel model = new InventoryModel(Database_URL, userName, password);
+				InventoryModel model = new InventoryModel();
 
 				InventoryController controller = new InventoryController(model);
 				InventoryView view = new InventoryView(controller);
@@ -25,10 +21,6 @@ public class InventoryTest {
 				view.setModel (model);
 				model.setView(view);
 				view.start();
-			}
-			catch (SQLException sqlException){
-				sqlException.printStackTrace();
-			}
 		});
 	}
 

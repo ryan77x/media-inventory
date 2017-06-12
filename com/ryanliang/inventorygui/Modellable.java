@@ -35,5 +35,7 @@ public interface Modellable {
 	public int getNumberOfRows();
 
 	public void clearSearchResult();
+
+	public void getDBConnection(String DBServerURL, String userName, String passWord);
 	
 }
