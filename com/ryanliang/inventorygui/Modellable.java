@@ -5,8 +5,6 @@
 
 package com.ryanliang.inventorygui;
 
-import java.sql.SQLException;
-
 public interface Modellable {
 
 	public void setView(Viewable view);

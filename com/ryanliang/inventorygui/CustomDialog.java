@@ -307,6 +307,10 @@ public class CustomDialog extends JDialog implements ActionListener{
 	private void resetSettings() {
 		done = true;
 		setVisible(false);
+		errorLabel.setText("");
+		remove(radioButtonPanel);
+		remove(searchPanel);
+		removePanels();
 	}
 
 	public String getQuantity() {
@@ -411,7 +415,6 @@ public class CustomDialog extends JDialog implements ActionListener{
 	public void resetRadioButtonGroup() {
 		radioGroup.clearSelection();
 	}
-
 	public void initUI() {
 		errorLabel.setText("");
 		remove(radioButtonPanel);

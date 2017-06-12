@@ -218,7 +218,6 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		String description = "";
 		String genre = "";
 		
-		connectedToDatabase = true;
 		try {
 			queryStatement = connection.prepareStatement(sqlString);
 			
@@ -654,6 +653,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			view.update(UpdateType.DB_CONNECTION_ERROR);
 		}
 		
 	}

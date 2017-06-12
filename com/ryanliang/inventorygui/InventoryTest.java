@@ -6,7 +6,6 @@
 package com.ryanliang.inventorygui;
 
 import java.awt.EventQueue;
-import java.sql.SQLException;
 
 public class InventoryTest {
 	

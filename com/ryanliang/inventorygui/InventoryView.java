@@ -43,7 +43,7 @@ public class InventoryView extends JFrame implements Viewable{
 	
 	private CustomDialog subDialog = null;
 	
-	private JTextField DBServerURLField = new JTextField("jdbc:mysql://localhost:3306/media");
+	private JTextField DBServerURLField = new JTextField("jdbc:mysql://localhost:3306/media",50);
 	private JTextField userNameField = new JTextField();
 	private JTextField passWordField = new JPasswordField();
 	private String DBServerURL;
@@ -55,6 +55,7 @@ public class InventoryView extends JFrame implements Viewable{
 	private final JMenu editMenu = new JMenu("Edit");
 	private final JMenu helpMenu = new JMenu("Help");
 	
+	private final JMenuItem loginFileMenu = new JMenuItem("Login");
 	private final JMenuItem exitFileMenu = new JMenuItem("Exit");
 	
 	private final JMenuItem newEditMenu = new JMenuItem("New");
@@ -99,7 +100,7 @@ public class InventoryView extends JFrame implements Viewable{
 
 	private void getLoginCredential() {
 		   Object[] message = {
-			   "Databse Server URL:", DBServerURLField,
+			   "Database Server URL:", DBServerURLField,
 		       "User Name:", userNameField,
 		       "Password:", passWordField
 		   };
@@ -116,9 +117,8 @@ public class InventoryView extends JFrame implements Viewable{
 
 	private void addListeners() {
 		
-		exitFileMenu.addActionListener(event -> {
-			quitApp();
-		});
+		loginFileMenu.addActionListener(event -> getLoginCredential());
+		exitFileMenu.addActionListener(event -> quitApp());
 	
 		aboutHelpMenu.addActionListener(event -> {
 			JOptionPane.showMessageDialog(null, "Media inventory system v1.0 Copyright 2017 RLTech Inc");
@@ -150,6 +150,7 @@ public class InventoryView extends JFrame implements Viewable{
 	}
 
 	private void organizeUI() {
+		fileMenu.add(loginFileMenu);
 		fileMenu.addSeparator();
 		fileMenu.add(exitFileMenu);
 		
@@ -360,6 +361,9 @@ public class InventoryView extends JFrame implements Viewable{
 		else if (ut == UpdateType.ITEM_QUANTITY){
 			itemQuantity = model.getItemQuantity();
 		}
+		else if (ut == UpdateType.DB_CONNECTION_ERROR){
+			JOptionPane.showMessageDialog(null, "Database connection related error has occurred.  Try login again, check database server status, and etc...", "alert", JOptionPane.ERROR_MESSAGE);  
+		}
 	}
 
 	private void setSearchResultStatusVisible(boolean v) {
@@ -375,7 +379,6 @@ public class InventoryView extends JFrame implements Viewable{
 		if (subDialog.getDone() == true){	
 			editResultHelper(subDialog.getItem());
 		}
-	
 		if (subDialog != null){
 			subDialog.initUI();
 		}

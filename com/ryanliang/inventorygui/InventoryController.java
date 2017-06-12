@@ -5,8 +5,6 @@
 
 package com.ryanliang.inventorygui;
 
-import java.sql.SQLException;
-
 public class InventoryController implements Controllable {
 
 		private final Modellable model;
