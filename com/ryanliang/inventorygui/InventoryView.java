@@ -315,6 +315,8 @@ public class InventoryView extends JFrame implements Viewable{
 				displayTable();	
 				setSearchResultStatusVisible(true);
 			}
+			//Must clear search result or edit dialog won't get expected data.  Calling model.getSearchResult() would also do the same thing and more.
+			model.clearSearchResult();
 		}
 		else if (ut == UpdateType.EDIT){
 			Media [] result = model.getSearchResult();

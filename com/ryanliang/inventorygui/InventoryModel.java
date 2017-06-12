@@ -35,7 +35,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		nonQueryStatement = null;
 		queryStatement = null;
 		//statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-		
+
 		connectedToDatabase = true;
 		loadData();
 	}
@@ -80,6 +80,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 					nonQueryStatement.executeUpdate();
 				} catch (SQLException e) {
 					e.printStackTrace();
+					disconnectFromDatabase();
 				}
 			}
 			//Save data to database media ID table
@@ -90,6 +91,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 				nonQueryStatement.executeUpdate();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				disconnectFromDatabase();
 			}
 		}
 		else 
@@ -167,6 +169,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			nonQueryStatement.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
+			disconnectFromDatabase();
 		}
 	}
 
@@ -185,6 +188,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			nonQueryStatement.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
+			disconnectFromDatabase();
 		}
 	}
 
@@ -199,6 +203,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			nonQueryStatement.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
+			disconnectFromDatabase();
 		}
 	}
 	private boolean queryTable(MediaCategory media, String sqlString, String... parameters) {
@@ -260,6 +265,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			disconnectFromDatabase();
 		}
 		//Record match not found.
 		return false;
@@ -282,6 +288,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 					nonQueryStatement.executeUpdate();
 				} catch (SQLException e) {
 					e.printStackTrace();
+					disconnectFromDatabase();
 				}
 			}
 		}
@@ -320,6 +327,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			disconnectFromDatabase();
 		}
 	}
 	@Override
@@ -357,9 +365,15 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	public Media[] getSearchResult(){
 		Media [] result = searchResult.toArray(new Media[searchResult.size()]);
 		searchResult.clear();
+
 		return result;
 	}
-
+	
+	@Override
+	public void clearSearchResult(){
+		searchResult.clear();
+	}
+	
 	@Override
 	public void deleteItem(String itemID){
 		if (itemID != null){
@@ -404,6 +418,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			disconnectFromDatabase();
 		}
 	}
 
@@ -423,17 +438,17 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		//ID based search
 		while (true){
 			sqlString = "SELECT CDID, Title, Description, Genre, Artist, Quantity FROM cd INNER JOIN inventory ON cd.CDID=inventory.MediaID WHERE CDID = ?";
-			if (queryTable(MediaCategory.CD, sqlString, query))
+			if (queryTable(MediaCategory.CD, sqlString, query)){
 				break;
-		
+			}
 			sqlString = "SELECT DVDID, Title, Description, Genre, Cast, Quantity FROM dvd INNER JOIN inventory ON dvd.DVDID=inventory.MediaID WHERE DVDID = ?";
-			if (queryTable(MediaCategory.DVD, sqlString, query))
+			if (queryTable(MediaCategory.DVD, sqlString, query)){
 				break;
-
+			}
 			sqlString = "SELECT BookID, Title, Description, Genre, Author, ISBN, Quantity FROM book INNER JOIN inventory ON book.BookID=inventory.MediaID WHERE BookID = ?";
-			if (queryTable(MediaCategory.BOOK, sqlString, query))
+			if (queryTable(MediaCategory.BOOK, sqlString, query)){
 				break;
-
+			}
 			break;
 		}
 	}
@@ -510,6 +525,7 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
+					disconnectFromDatabase();
 				}
 			}
 		}
@@ -529,8 +545,10 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	}
 	
 	@Override
-	public String getColumnName(int column) 
+	public String getColumnName(int column) throws IllegalStateException 
 	{ 
+		checkDatabaseConnection();
+		
 		try {
 			return metaData.getColumnName(column+1);
 		} catch (SQLException e) {
@@ -540,14 +558,18 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	} 
 
 	@Override
-	public int getRowCount() 
+	public int getRowCount() throws IllegalStateException 
 	{ 
+		checkDatabaseConnection();
+		
 		return numberOfRows;
 	} 
 
 	@Override
-	public int getColumnCount() 
+	public int getColumnCount() throws IllegalStateException 
 	{ 
+		checkDatabaseConnection();
+		
 		try {
 			return metaData.getColumnCount();
 		} catch (SQLException e) {
@@ -557,8 +579,10 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 	} 
 
 	@Override
-	public Object getValueAt(int row, int column) 
+	public Object getValueAt(int row, int column) throws IllegalStateException 
 	{ 
+		checkDatabaseConnection();
+		
 		try {
 			resultSet.absolute(row + 1);
 			return resultSet.getObject(column +1);
@@ -568,8 +592,10 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 		return "";
 	}
 	@Override
-	public Class getColumnClass(int column) 
+	public Class getColumnClass(int column) throws IllegalStateException
 	{ 
+		checkDatabaseConnection();
+		
 		try {
 			String className = metaData.getColumnClassName(column + 1);
 			return Class.forName(className);
@@ -577,6 +603,11 @@ public class InventoryModel extends AbstractTableModel implements Modellable {
 			e.printStackTrace();
 		}
 		return Object.class;
+	}
+	
+	private void checkDatabaseConnection() {
+		if (!connectedToDatabase)
+			throw new IllegalStateException("Not Connected to Database");
 	}
 }
 

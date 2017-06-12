@@ -33,5 +33,7 @@ public interface Modellable {
 	public void disconnectFromDatabase();
 
 	public int getNumberOfRows();
+
+	public void clearSearchResult();
 	
 }
