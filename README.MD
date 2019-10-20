@@ -8,7 +8,7 @@ This Java desktop app is for managing media items (Books, CDs, DVDs, Movies) wit
     NOTE: Java, JDK, MySQL database server and Eclipse are already installed in your system <br>
     NOTE: mysql-connector-java-8.0.18.jar is included. <br>
     Database connection URL can be the following depending on version of MySQL server or mysql-connector: <br>
-    jdbc:mysql://localhost:3306/media <br>
+    jdbc:mysql://localhost:3306/media <br><br>
     jdbc:mysql://localhost:3306/media?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
   </li>
   <li>
@@ -20,7 +20,7 @@ This Java desktop app is for managing media items (Books, CDs, DVDs, Movies) wit
     Compile and run InventoryTest.java located at com.ryanliang.inventorygui <br>
     <br>
     To run the JUnit test:<br> 
-    Make sure JUnit 4 libray (Jar files) is added to build path.  JUnit jar files can be download from https://junit.org/junit4 and may also come with Eclipse IDE.
+    Make sure JUnit 4 library (Jar files) is added to build path.  JUnit jar files can be downloaded from https://junit.org/junit4 and may also come with Eclipse IDE.
   </li>
 </ul>
 </p>
