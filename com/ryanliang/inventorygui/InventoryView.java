@@ -43,7 +43,7 @@ public class InventoryView extends JFrame implements Viewable{
 	
 	private CustomDialog subDialog = null;
 	
-	private JTextField DBServerURLField = new JTextField("jdbc:mysql://localhost:3306/media",50);
+	private JTextField DBServerURLField = new JTextField("jdbc:mysql://localhost:3306/media?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",50);
 	private JTextField userNameField = new JTextField();
 	private JTextField passWordField = new JPasswordField();
 	private String DBServerURL;
