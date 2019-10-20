@@ -17,7 +17,10 @@ This Java desktop app is for managing media items (Books, CDs, DVDs, Movies) wit
   <li>
     To run the project:<br> 
     Create database in MySQL by executing "source inventory_db.sql" or run "inventory_db.sql" in MySQLWorkBench where the "inventory_db.sql" file is located in the db folder. <br> 
-    Compile and run InventoryTest.java located at com.ryanliang.inventorygui
+    Compile and run InventoryTest.java located at com.ryanliang.inventorygui <br>
+    <br>
+    To run the JUnit test:<br> 
+    Make sure JUnit 4 libray (Jar files) is added to build path.  JUnit jar files can be download from https://junit.org/junit4 and may also come with Eclipse IDE.
   </li>
 </ul>
 </p>
